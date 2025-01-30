@@ -101,7 +101,7 @@ class _JoinProjectState extends State<JoinProject> {
                       child: const Text("Submit", style: TextStyle(color: Colors.white),)
                   ),
                   const SizedBox(height: 50,),
-                  GestureDetector(child: const Text("Want to create Project?"), onTap: () {changePageState();}),
+                  GestureDetector(child: const Text("Want to create Project?"), onTap: () {changePageState();}:),
                 ],
               ),
             ),
