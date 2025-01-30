@@ -27,6 +27,7 @@ class _JoinProjectState extends State<JoinProject> {
       validator: (value) {
          return validatorFunction(value);
         },
+      style: const TextStyle(color: Colors.white70),
     );
   }
 
@@ -57,22 +58,54 @@ class _JoinProjectState extends State<JoinProject> {
     print(passwordController.text);
   }
 
+  // changes the screen state between join group and create group
+  void changePageState() {
+    print("in here!");
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    // getting the width of the screen
+    final Size size = MediaQuery.sizeOf(context);
+    final double width = size.width;
+    final double height = size.height;
+
     return Scaffold(
+      backgroundColor: Colors.grey[850],
       body: Form(
         key: _formKey,
-        child: Column(
+        child: Row(
           children: [
-            const Text("Join Group"),
-            const Text("Group Name"),
-            // change the max input length to match specification in user requirements
-            createInputField(idController, "Enter Group ID", 10, idInputValidator),
-            const Text("Group Password"),
-            createInputField(passwordController, "Enter Group Password", 10, passwordInputValidator),
-            ElevatedButton(
-                onPressed: submitAction,
-                child: const Text("Submit"))
+            SizedBox(width: width / 3,),
+            SizedBox(
+              width: width / 3,
+              height: height,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 10),
+                  Text("Join Group", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[800]),),
+                  const SizedBox(height: 100),
+                  Align(alignment: Alignment.centerLeft,child: Text("Group Name", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),),
+                  // change the max input length to match specification in user requirements
+                  createInputField(idController, "Enter Group ID", 10, idInputValidator),
+                  const SizedBox(height: 100),
+                  Align(alignment: Alignment.centerLeft, child: Text("Group Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300]))),
+                  createInputField(passwordController, "Enter Group Password", 10, passwordInputValidator),
+                  const SizedBox(height: 100),
+                  ElevatedButton(
+                      onPressed: submitAction,
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[800]),
+                      child: const Text("Submit", style: TextStyle(color: Colors.white),)
+                  ),
+                  const SizedBox(height: 50,),
+                  GestureDetector(child: const Text("Want to create Project?"), onTap: () {changePageState();}),
+                ],
+              ),
+            ),
+            SizedBox(width: width / 3,),
           ],
         ),
       ),
