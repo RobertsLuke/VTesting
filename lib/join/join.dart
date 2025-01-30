@@ -16,6 +16,14 @@ class _JoinProjectState extends State<JoinProject> {
   final idController = TextEditingController();
   final passwordController = TextEditingController();
 
+  // this variable dictates the state of the screen. When equal to true, it will
+  // allow the user to join a group. When equal to false, it will allow the user
+  // to create a group.
+  bool joinMode = true;
+
+  // this is going to be the DateTime value that the user sets inside of the calendar
+  final dueDate = DateTime.now();
+
   // creating a function that returns a Input Box
   TextFormField createInputField(TextEditingController controller, String hintMessage, int maxInputLength, Function validatorFunction) {
     return TextFormField(
@@ -28,6 +36,37 @@ class _JoinProjectState extends State<JoinProject> {
          return validatorFunction(value);
         },
       style: const TextStyle(color: Colors.white70),
+    );
+  }
+
+  Container dueDateContainer() {
+    DateTime currentTime = DateTime.now();
+    DateTime finalDateInCalendar = DateTime(currentTime.year + 5, currentTime.month, currentTime.day);
+
+    return Container(
+        child: Column(
+          children: [
+            const SizedBox(height: 100),
+            Align(alignment: Alignment.centerLeft,child: Text("Due Date", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),),
+            const SizedBox(height: 10),
+            dueDateWidget(),
+            const SizedBox(height: 20),
+           ],
+        )
+    );
+  }
+  Widget dueDateWidget() {
+    DateTime currentTime = DateTime.now();
+    DateTime finalDateInCalendar = DateTime(currentTime.year + 5, currentTime.month, currentTime.day);
+
+    return Container(
+      decoration: const BoxDecoration(color: Colors.white),
+      child: CalendarDatePicker(
+          initialDate: currentTime,
+          firstDate: currentTime,
+          lastDate: finalDateInCalendar,
+          onDateChanged: (selectedDate) {}
+      ),
     );
   }
 
@@ -60,7 +99,9 @@ class _JoinProjectState extends State<JoinProject> {
 
   // changes the screen state between join group and create group
   void changePageState() {
-    print("in here!");
+    setState(() {
+      joinMode = !joinMode;
+    });
   }
 
   @override
@@ -70,6 +111,7 @@ class _JoinProjectState extends State<JoinProject> {
     final Size size = MediaQuery.sizeOf(context);
     final double width = size.width;
     final double height = size.height;
+
 
     return Scaffold(
       backgroundColor: Colors.grey[850],
@@ -85,7 +127,7 @@ class _JoinProjectState extends State<JoinProject> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
-                  Text("Join Group", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[800]),),
+                  Text((joinMode)?"Join Group": "Create Group", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[800]),),
                   const SizedBox(height: 100),
                   Align(alignment: Alignment.centerLeft,child: Text("Group Name", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),),
                   // change the max input length to match specification in user requirements
@@ -93,7 +135,8 @@ class _JoinProjectState extends State<JoinProject> {
                   const SizedBox(height: 100),
                   Align(alignment: Alignment.centerLeft, child: Text("Group Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300]))),
                   createInputField(passwordController, "Enter Group Password", 10, passwordInputValidator),
-                  const SizedBox(height: 100),
+                  // const SizedBox(height: 100),
+                  (joinMode)?  const SizedBox(height: 100): dueDateContainer(),
                   ElevatedButton(
                       onPressed: submitAction,
                       style: ElevatedButton.styleFrom(
@@ -101,7 +144,7 @@ class _JoinProjectState extends State<JoinProject> {
                       child: const Text("Submit", style: TextStyle(color: Colors.white),)
                   ),
                   const SizedBox(height: 50,),
-                  GestureDetector(child: const Text("Want to create Project?"), onTap: () {changePageState();}),
+                  GestureDetector(child: Text((joinMode)?"Want to create Project?": "Want to join a Project?", style: const TextStyle(color: Colors.white70),), onTap: () {changePageState();}),
                 ],
               ),
             ),
