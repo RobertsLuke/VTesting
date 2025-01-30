@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
 
-class BlankPage extends StatelessWidget {
-  const BlankPage({super.key});
+class JoinProject extends StatefulWidget {
+  const JoinProject({super.key});
 
   @override
+  State<JoinProject> createState() => _JoinProjectState();
+}
+
+class _JoinProjectState extends State<JoinProject> {
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Title'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: const Center(
-        child: Text(''), // Blank body
-      ),
-    );
+    return const Placeholder();
   }
 }
