@@ -1,0 +1,43 @@
+CREATE DATABASE software_engineering_iteration2;
+
+\c software_engineering_iteration2;
+
+-- DOUBLE CHECK THE DIFFERENT OPTIONS
+CREATE TYPE notification_enum AS ENUM ('Daily', 'Weekly');
+
+-- DOUBLE CHECK THE DIFFERENT OPTIONS
+CREATE TYPE role_enum AS ENUM ('Editor', 'Viewer');
+
+
+-- NOT DOING ANY OF THE FOREIGN KEYS YET FOR ANY TABLE
+
+-- DONE NORMAL ATTRIBUTES
+CREATE TABLE PROJECT (
+    user_id SERIAL PRIMARY KEY,
+    join_code NOT NULL VARCHAR(10),
+    proj_name NOT NULL VARCHAR(20),
+    deadline NOT NULL DATE,
+    notification_preference NOT NULL notification_enum,
+    google_drive_link VARCHAR(200),
+    discord_link VARCHAR(200)
+);
+
+-- DONE NORMAL ATTRIBUTES
+CREATE TABLE PROJECT_MEMBERS (
+    members_id SERIAL PRIMARY KEY,
+    is_owner NOT NULL BOOL,
+    role NOT NULL role_enum,
+    join_date NOT NULL DATE
+);
+
+CREATE TABLE TASK ();
+
+CREATE TABLE MEETING ();
+
+CREATE TABLE CONTRIBUTION_REPORT ();
+
+CREATE TABLE USER();
+
+CREATE TABLE USER_PROJECT ();
+
+CREATE TABLE TASK_MEMBERS ();
