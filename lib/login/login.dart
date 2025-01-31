@@ -11,81 +11,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  bool isLoginMode = true;
+
+  final _username = TextEditingController();
+  final _password = TextEditingController();
+  final _email = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.sizeOf(context);
     final double width = size.width;
     final double height = size.height;
-
-    TextEditingController username = TextEditingController();
-    TextEditingController password = TextEditingController();
-
-    // this is for prototyping only, in the iteration 2 we will switch to firebase
-    List<Map<String, String>> userDetails = [
-      {"name": "jib", "password": "admin1234"},
-      {"name": "luke", "password": "DiwizMySecretSecret..."}];
-
-    String mode = "Login";
-
-    String getButtonText() {
-      if (mode == "Login") {
-        return "Switch to Sign Up";
-      }
-      return "Switch to Login";
-    }
-
-    // this function will be called when the user presses confirm on the login
-    // screen
-    void login(String username, String password) {
-
-      bool exists = false;
-
-      for (var user in userDetails) {
-        if (user["name"] == username && user["password"] == password) {
-          // successful, correct username and password
-          //Navigator.pushNamed(context, '/createProject');
-          print("successful");
-          exists = !exists;
-          break;
-        }
-        else if (user["name"] == username) {
-          // user exists but incorrect password
-          print("incorrect password");
-          exists = !exists;
-          break;
-        }
-      }
-
-      if (!exists) {
-        print("this user does not exist");
-      }
-    }
-
-    // this function will be called when the user presses confirm on the sign up
-    // screen
-
-    void signUp(String username, String password) {
-      bool exists = false;
-
-      for (var user in userDetails) {
-        if (user["name"] == username) {
-          // username already exists so you can not signUp
-          exists = !exists;
-          break;
-        }
-      }
-
-      if (exists) {
-        print("username already exists, try creating a new username");
-      }
-      else {
-        if (password.length < 8) {
-          print("password is too short");
-        }
-        userDetails.add({"name": username, "password": password});
-        print("added user to list");
-      }
-    }
 
     // validates the email input box
     String? emailInputValidator(String value) {
@@ -128,8 +64,62 @@ class _LoginScreenState extends State<LoginScreen> {
 
     void submitAction() {
       if (_formKey.currentState!.validate()) {}
-
     }
+
+    void changePageState() {
+      setState(() {
+        isLoginMode = !isLoginMode;
+      });
+    }
+
+    // this handles the ui for the username
+    Container usernameContainer() {
+      return Container(
+        child: Column(
+          children: [
+            const SizedBox(height: 50,),
+            Text("Username", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
+            SizedBox(
+                width: 200,
+                child: createInputField(_username, "Enter your username", 10, usernameInputValidator)
+            ),
+
+          ],
+        ),
+      );
+    }
+
+    // this handles the ui for the email
+    Container emailContainer() {
+      return Container(
+        child: Column(
+          children: [
+            const SizedBox(height: 50,),
+            Text("Email", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
+            SizedBox(
+                width: 200,
+                child: createInputField(_email, "Enter your email", 10, emailInputValidator)
+            ),
+          ],
+        ),
+      );
+    }
+
+    Container passwordContainer() {
+      return Container(
+        child: Column(
+          children: [
+            Text("Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
+            const SizedBox(height: 50),
+            SizedBox(
+                width: 200,
+                child: createInputField(_password, "Enter Password", 10, passwordInputValidator)
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[850],
       body: Row(
@@ -144,7 +134,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: 200, width: 300 ,child: Image.asset("assets/login/welcome_image.jpg")),
-                  const Text("Welcome!", style: TextStyle(color: Colors.white, fontSize: 30),),
+                  const SizedBox(height: 20,),
+                  Text("Welcome!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
                 ],
               ),
             ),
@@ -158,21 +149,12 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(mode, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[800]),),
-                  const SizedBox(height: 70),
-                  Text("Username", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
+                  Text((isLoginMode)?"Login":"Sign Up" , style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[800]),),
+                  // const SizedBox(height: 70),
+                  emailContainer(),
+                  (isLoginMode)?  const SizedBox(height: 50) : usernameContainer(),
                   const SizedBox(height: 50),
-                  SizedBox(
-                    width: 200,
-                    child: createInputField(username, "Enter your username", 10, emailInputValidator)
-                  ),
-                  const SizedBox(height: 50),
-                  Text("Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
-                  const SizedBox(height: 50),
-                  SizedBox(
-                    width: 200,
-                    child: createInputField(password, "Enter Password", 10, passwordInputValidator)
-                  ),
+                  passwordContainer(),
                   const SizedBox(height: 50),
                   // confirm button
                   ElevatedButton(
@@ -180,18 +162,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[800]),
                       child: const Text("confirm", style: TextStyle(color: Colors.white))),
                   const SizedBox(height: 20,),
-                  InkWell(
+                  // switch mode button
+                  GestureDetector(
                     onTap: () {
-                      setState(() {
-                        if (mode == "Login") {
-                          mode = "Sign Up";
-                        }
-                        else {
-                          mode = "Login";
-                        }
-                      });
+                      changePageState();
                     },
-                    child: Text(getButtonText(), style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),),
+                    child: Text((isLoginMode)?"Want to Sign Up?":"Want to Login?", style: const TextStyle(color: Colors.white70)),
                   )
                 ],
               ),
