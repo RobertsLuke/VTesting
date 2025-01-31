@@ -8,6 +8,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.sizeOf(context);
@@ -84,7 +87,51 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
 
+    // validates the email input box
+    String? emailInputValidator(String value) {
+      if (value.isEmpty) {
+        return "Can not leave this field empty";
+      }
+      return null;
+    }
+
+    // validates the password input box
+    String? passwordInputValidator(String value) {
+      if (value.isEmpty) {
+        return "Can not leave this field empty";
+      }
+      return null;
+    }
+
+    // validates the username input box
+    String? usernameInputValidator(String value) {
+      if (value.isEmpty) {
+        return "Can not leave this field empty";
+      }
+      return null;
+    }
+
+    // creating a function that returns a Input Box
+    TextFormField createInputField(TextEditingController controller, String hintMessage, int maxInputLength, Function validatorFunction) {
+      return TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: hintMessage,
+        ),
+        maxLength: maxInputLength,
+        validator: (value) {
+          return validatorFunction(value);
+        },
+        style: const TextStyle(color: Colors.white70),
+      );
+    }
+
+    void submitAction() {
+      if (_formKey.currentState!.validate()) {}
+
+    }
     return Scaffold(
+      backgroundColor: Colors.grey[850],
       body: Row(
         children: [
           // first half of the login screen DECORATION
@@ -92,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
             height: height,
             width: width * 0.5,
             child: Container(
-              color: Colors.blue,
+              color: Colors.blue[800],
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -106,55 +153,48 @@ class _LoginScreenState extends State<LoginScreen> {
           SizedBox(
             height: height,
             width: width * 0.5,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(mode),
-                const SizedBox(height: 40,),
-                const Text("username"),
-                const SizedBox(width: 10,),
-                SizedBox(
-                  width: 200,
-                  child: TextFormField(
-                    controller: username,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(mode, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[800]),),
+                  const SizedBox(height: 70),
+                  Text("Username", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
+                  const SizedBox(height: 50),
+                  SizedBox(
+                    width: 200,
+                    child: createInputField(username, "Enter your username", 10, emailInputValidator)
                   ),
-                ),
-                const SizedBox(width: 20,),
-                const Text("password"),
-                const SizedBox(height: 10,),
-                SizedBox(
-                  width: 200,
-                  child: TextFormField(
-                    controller: password,
+                  const SizedBox(height: 50),
+                  Text("Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
+                  const SizedBox(height: 50),
+                  SizedBox(
+                    width: 200,
+                    child: createInputField(password, "Enter Password", 10, passwordInputValidator)
                   ),
-                ),
-                const SizedBox(height: 20,),
-                // confirm button
-                ElevatedButton(
-                    onPressed: () {
-                      if (mode == "Login") {
-                        login(username.text, password.text);
-                      }
-                      else {
-                        signUp(username.text, password.text);
-                      }
+                  const SizedBox(height: 50),
+                  // confirm button
+                  ElevatedButton(
+                      onPressed: submitAction,
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[800]),
+                      child: const Text("confirm", style: TextStyle(color: Colors.white))),
+                  const SizedBox(height: 20,),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (mode == "Login") {
+                          mode = "Sign Up";
+                        }
+                        else {
+                          mode = "Login";
+                        }
+                      });
                     },
-                    child: Text("confirm")),
-                const SizedBox(height: 20,),
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      if (mode == "Login") {
-                        mode = "Sign Up";
-                      }
-                      else {
-                        mode = "Login";
-                      }
-                    });
-                  },
-                  child: Text(getButtonText(), style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),),
-                )
-              ],
+                    child: Text(getButtonText(), style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),),
+                  )
+                ],
+              ),
             ),
           )
         ],
