@@ -2,6 +2,8 @@ CREATE DATABASE software_engineering_iteration2;
 
 \c software_engineering_iteration2;
 
+CREATE USER admin ON DATABASE 'software_engineering_iteration2' WITH PASSWORD '1234' SUPERUSER;
+
 -- DOUBLE CHECK THE DIFFERENT OPTIONS
 CREATE TYPE notification_enum AS ENUM ('Daily', 'Weekly');
 
