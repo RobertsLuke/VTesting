@@ -1,12 +1,17 @@
 import "package:flutter/material.dart";
 import 'package:sevenc_iteration_two/testingNavigation.dart';
 //import 'package:sevenc_iteration_two/userProfile/profile.dart';
+import 'package:postgres/postgres.dart';
 
 import './login/login.dart';
 import './join/join.dart';
 
 
 void main() {
+
+  // connecting to Virtual Machine
+  // final database_connection = Connection.open();
+
   runApp(
       MaterialApp(
         // setting up initial routes to different screens, loading up login first
