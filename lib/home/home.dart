@@ -1,21 +1,41 @@
 import 'package:flutter/material.dart';
 
-class BlankPage extends StatelessWidget {
-  const BlankPage({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Title'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: const Center(
-        child: Text(''), // Blank body
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+
+  // have to get the project name of the project the user is currently inside
+  String screenTitle = "PROJECT_NAME";
+
+  Widget createProjectTimerCountdown() {
+
+    // make this an updated countdown till the project finishes
+    return const Text("PLACEHOLDER");
+  }
+
+  Widget createHomeBody() {
+
+    return Container(
+      child: Column(
+        children: [
+          Row(children: [
+            Column(
+              children: [
+                const Text("Project Deadline"),
+                createProjectTimerCountdown()
+              ],
+            )
+          ],),
+        ],
       ),
     );
+
   }
-}
+
+  // creates the body of the create task tab
+  Widget createTaskBody() {
