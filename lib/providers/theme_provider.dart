@@ -5,6 +5,8 @@ enum ThemeType { light, dark, custom } // Define three theme types
 
 class ThemeProvider with ChangeNotifier {
   ThemeType _themeType = ThemeType.dark; // Default theme mode
+  Color? _surfaceColor; 
+  Color? _onSurfaceColor;
 
   ThemeData get currentTheme {
     switch (_themeType) {
@@ -13,7 +15,13 @@ class ThemeProvider with ChangeNotifier {
       case ThemeType.dark:
         return AppTheme(TextTheme()).dark();
       case ThemeType.custom:
-        return AppTheme(TextTheme()).custom();
+        // Ensure custom colors are passed correctly
+        if (_surfaceColor != null && _onSurfaceColor != null) {
+          // Calling AppTheme.custom() with primaryColor and accentColor as arguments
+          return AppTheme(TextTheme()).custom(_surfaceColor!, _onSurfaceColor!);
+        } else {
+          return AppTheme(TextTheme()).dark(); // Fallback to dark theme if no custom colors are set
+        }
       default:
         return AppTheme(TextTheme()).dark(); // Default to dark theme if none selected
     }
@@ -35,4 +43,22 @@ class ThemeProvider with ChangeNotifier {
     _themeType = theme;
     notifyListeners();
   }
+
+  // Update custom theme colors
+  void setCustomTheme({required Color surfaceColor, required Color onSurfaceColor}) {
+    _surfaceColor = surfaceColor;
+    _onSurfaceColor = onSurfaceColor;
+    setTheme(ThemeType.custom); // Switch to custom theme
+    notifyListeners();
+  }
+
+  void toggleTheme() {
+  if (_themeType == ThemeType.dark) {
+    setTheme(ThemeType.light);
+  } else if (_themeType == ThemeType.light) {
+    setTheme(ThemeType.custom);
+  } else {
+    setTheme(ThemeType.dark);
+  }
+}
 }

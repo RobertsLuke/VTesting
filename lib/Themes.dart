@@ -1,11 +1,68 @@
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 
 class AppTheme {
   final TextTheme textTheme;
 
   const AppTheme(this.textTheme);
 
-  static MaterialColor get customPrimaryColor => Colors.pink; // You can define custom colors
+  static ColorScheme customScheme(Color surfaceColor, Color textColor) {
+    return ColorScheme(
+      brightness: Brightness.light,
+      primary: Color(4289316863),
+      surface: surfaceColor,  // Dynamic accent color
+      onPrimary: Colors.white,
+      onSurface: textColor,
+      secondary: Color(4283785073),
+      onSecondary: Color(4294967295),
+      secondaryContainer: Color(4292535033),
+      onSecondaryContainer: Color(4279376939),
+      tertiary: Color(4285486453),
+      onTertiary: Color(4294967295),
+      tertiaryContainer: Color(4294564093),
+      onTertiaryContainer: Color(4280816431),
+      error: Colors.red,
+      onError: Colors.white,
+      onSurfaceVariant: Colors.black,
+      outline: Colors.grey,
+      outlineVariant: Colors.grey,
+      shadow: Colors.black,
+      scrim: Colors.black,
+      inverseSurface: Colors.black,
+      inversePrimary: Colors.white,
+      primaryFixed: Colors.blue,
+      onPrimaryFixed: Colors.white,
+      primaryFixedDim: Colors.blueGrey,
+      onPrimaryFixedVariant: Colors.white,
+      secondaryFixed: Colors.green,
+      onSecondaryFixed: Colors.white,
+      secondaryFixedDim: Colors.greenAccent,
+      onSecondaryFixedVariant: Colors.white,
+      surfaceDim: Colors.grey,
+      surfaceBright: Colors.white,
+      surfaceContainerLowest: Colors.white,
+      surfaceContainerLow: Colors.white,
+      surfaceContainer: Colors.white,
+      surfaceContainerHigh: Colors.white,
+      surfaceContainerHighest: Colors.white,
+    );
+  }
+
+  ThemeData custom(Color surfaceColor, Color textColor) {
+    return theme(customScheme(surfaceColor, textColor));
+  }
+
+// method to build ThemeData
+  ThemeData theme(ColorScheme colorScheme) {
+    return ThemeData(
+      colorScheme: colorScheme,
+      textTheme: textTheme,
+      // Customize other theme properties if needed
+    );
+  }
+
+  ThemeData dark() {
+    return theme(darkScheme());
+  }
 
   static ColorScheme darkScheme() {
     return const ColorScheme(
@@ -54,13 +111,14 @@ class AppTheme {
       surfaceContainerLow: Color(4279835680),
       surfaceContainer: Color(4280098852),
       surfaceContainerHigh: Color(4280822319),
-      surfaceContainerHighest: Color(4281546042),
+      surfaceContainerHighest: Color(4281546042)
     );
   }
 
-  ThemeData dark() {
-    return theme(darkScheme());
+  ThemeData light() {
+    return theme(lightScheme());
   }
+
   static ColorScheme lightScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
@@ -81,11 +139,8 @@ class AppTheme {
       onError: Color(4294967295),
       errorContainer: Color(4294957782),
       onErrorContainer: Color(4282449922),
-      background: Color(4294572543),
-      onBackground: Color(4279835680),
       surface: Color(4294572543),
       onSurface: Color(4279835680),
-      surfaceVariant: Color(4292928236),
       onSurfaceVariant: Color(4282664782),
       outline: Color(4285822847),
       outlineVariant: Color(4291086031),
@@ -114,34 +169,5 @@ class AppTheme {
       surfaceContainerHighest: Color(4293059305),
     );
   }
-
-  ThemeData light() {
-    return theme(lightScheme());
-  }
-    static ColorScheme customScheme() {
-    return const ColorScheme(
-      brightness: Brightness.light,
-      primary: Colors.purple, // Example custom primary color
-      surface: Colors.purpleAccent,
-      onPrimary: Colors.white,
-      onSurface: Colors.black,
-      secondary: Colors.green,
-      onSecondary: Colors.white,
-      error: Colors.red,
-      onError: Colors.white,
-    );
-  }
-
-  ThemeData custom() {
-    return theme(customScheme());
-  }
-
-  ThemeData theme(ColorScheme colorScheme) {
-    return ThemeData(
-      colorScheme: colorScheme,
-      textTheme: textTheme,
-      // Customize other theme properties if needed
-    );
-  }
 }
-  
+
