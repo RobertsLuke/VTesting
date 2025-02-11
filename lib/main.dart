@@ -7,6 +7,7 @@ import './login/login.dart';
 import './join/join.dart';
 import './home/home.dart';
 import './Themes.dart'; // Import the custom themes
+import 'usser/usserProfilePage.dart';
 
 
 
@@ -23,14 +24,14 @@ void main() {
           themeMode: ThemeMode.dark, // Choose the theme mode (Change .dark with .light if needed)
 
         // setting up initial routes to different screens, loading up login first
-          initialRoute: "/home",
+          initialRoute: "/usserProfile",
         // replace the "/navigation" with the page you are testing if you dont want to go through navigation
           routes: {
             "/home": (context) => const Home(),
             "/navigation": (context) => const NavigationPage(),
             "/login": (context) => const LoginScreen(),
             "/join": (context) => const JoinProject(),
-            // "/userProfile/profile": (context) => const UserProfile(),
+            "/usserProfile": (context) => usserProfile(),
 
           }
       )
