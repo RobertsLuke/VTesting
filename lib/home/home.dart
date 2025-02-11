@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/theme_provider.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+
+
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -10,7 +15,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   // have to get the project name of the project the user is currently inside
   String screenTitle = "PROJECT_NAME";
-
+  
   Widget createProjectTimerCountdown() {
     // make this an updated countdown till the project finishes
     return const Text("PLACEHOLDER");
@@ -126,7 +131,7 @@ class _HomeState extends State<Home> {
                 children: [
                   Text("Title",
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.blue[800],
+                        //color: theme.colorScheme.onSurfaceVariant,//Colors.blue[800],
                       )),
                   TextFormField(
                     controller: taskTitleController,
@@ -146,7 +151,7 @@ class _HomeState extends State<Home> {
 
                   Text("Subtasks",
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.blue[800],
+                        //color: Colors.blue[800],
                       )),
                   Row(
                     children: [
@@ -184,7 +189,7 @@ class _HomeState extends State<Home> {
 
                   Text("Description",
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.blue[800],
+                        //color: Colors.blue[800],
                       )),
                   TextFormField(
                     controller: taskDescriptionController,
@@ -205,7 +210,7 @@ class _HomeState extends State<Home> {
 
                   Text("Priority Level",
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.blue[800],
+                        //color: Colors.blue[800],
                       )),
                   DropdownButtonFormField<int>(
                     items: [1, 2, 3, 4, 5]
@@ -229,7 +234,7 @@ class _HomeState extends State<Home> {
 
                   Text("Due Date",
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.blue[800],
+                        //color: Colors.blue[800],
                       )),
                   Row(
                     children: [
@@ -261,7 +266,7 @@ class _HomeState extends State<Home> {
                 children: [
                   Text("Percentage Weighting",
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.blue[800],
+                        //color: Colors.blue[800],
                       )),
                   TextFormField(
                     controller: percentageWeightingController,
@@ -281,7 +286,7 @@ class _HomeState extends State<Home> {
 
                   Text("Tags",
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.blue[800],
+                        //color: Colors.blue[800],
                       )),
                   Row(
                     children: [
@@ -319,7 +324,7 @@ class _HomeState extends State<Home> {
 
                   Text("File Drop",
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.blue[800],
+                        //color: Colors.blue[800],
                       )),
                   Container(
                     height: 100,
@@ -341,19 +346,21 @@ class _HomeState extends State<Home> {
                       ElevatedButton(
                         onPressed: clearForm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red[700],
+                          backgroundColor: theme.colorScheme.primary,
                         ),
-                        child: const Text("Clear",
-                            style: TextStyle(color: Colors.black)),
+                        child: Text("Clear",
+                            style: TextStyle(color: theme.colorScheme.onPrimary)
+                            ),
                       ),
                       const SizedBox(width: 16),
                       ElevatedButton(
                         onPressed: createTask,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
+                          backgroundColor: theme.colorScheme.primary,
                         ),
-                        child: const Text("Create",
-                            style: TextStyle(color: Colors.black)),
+                        child: Text("Create",
+                            style: TextStyle(color: theme.colorScheme.onPrimary)
+                            ),
                       ),
                     ],
                   ),
@@ -365,13 +372,6 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-
-
-
-
-
-
-
 
   // creates the body of the messages tab
   Widget createMessages() {
@@ -393,13 +393,143 @@ class _HomeState extends State<Home> {
     return Container();
   }
 
+  // creates Settings tab
+  Widget createSettingsBody() {
+    final theme = Theme.of(context);
+  return Consumer<ThemeProvider>(
+    builder: (context, themeProvider, child) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Settings", style: Theme.of(context).textTheme.headlineSmall),
+
+            ListTile(
+              title: const Text("Select Theme"),
+              subtitle: Text(
+                themeProvider.themeType.toString().split('.').last.toUpperCase(),
+              ),
+            ),
+
+            // Light Theme Option
+            RadioListTile<ThemeType>(
+              title: const Text("Light Theme"),
+              value: ThemeType.light,
+              groupValue: themeProvider.themeType,
+              onChanged: (ThemeType? value) {
+                if (value != null) themeProvider.setTheme(value);
+              },
+            ),
+
+            // Dark Theme Option
+            RadioListTile<ThemeType>(
+              title: const Text("Dark Theme"),
+              value: ThemeType.dark,
+              groupValue: themeProvider.themeType,
+              onChanged: (ThemeType? value) {
+                if (value != null) themeProvider.setTheme(value);
+              },
+            ),
+
+            // Custom Theme Option
+            RadioListTile<ThemeType>(
+              title: const Text("Custom Theme"),
+              value: ThemeType.custom,
+              groupValue: themeProvider.themeType,
+              onChanged: (ThemeType? value) {
+                if (value != null) themeProvider.setTheme(value);
+              },
+            ),
+
+            // Custom Theme Settings (only shown when "Custom Theme" is selected)
+            if (themeProvider.themeType == ThemeType.custom) ...[
+  const SizedBox(height: 16.0),
+
+  // Color Picker for Primary Color
+  ListTile(
+    title: const Text('Surface Color'),
+    trailing: CircleAvatar(
+      backgroundColor: theme.colorScheme.surface, // ?? Colors.blue, // Default if null
+    ),
+    onTap: () async {
+      final Color? newColor = await _showColorPicker(context, theme.colorScheme.surface);// ?? Colors.blue);
+      if (newColor != null) {
+        themeProvider.setCustomTheme(
+          surfaceColor: newColor,
+          onSurfaceColor: theme.colorScheme.onSurface?? Colors.green,  // Set accent color (default to green if null)
+        );
+      }
+    },
+  ),
+
+  // Color Picker for Accent (Secondary) Color
+  ListTile(
+    title: const Text('Text Color'),
+    trailing: CircleAvatar(
+      backgroundColor: theme.colorScheme.onSurface, // ?? Colors.green, // Default if null
+    ),
+    onTap: () async {
+      final Color? newColor = await _showColorPicker(context,  theme.colorScheme.onSurface);// ?? Colors.green);
+      if (newColor != null) {
+        themeProvider.setCustomTheme(
+          surfaceColor:  theme.colorScheme.surface,// ?? Colors.blue,  // Set primary color (default to blue if null)
+          onSurfaceColor: newColor,
+        );
+      }
+    },
+  ),
+            ],
+          ],
+        ),
+      );
+    },
+  );
+}
+
+// Helper function to show a color picker
+Future<Color?> _showColorPicker(BuildContext context, Color currentColor) async {
+  Color selectedColor = currentColor; // Store the selected color
+  
+  return showDialog<Color>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Pick a color'),
+      content: SingleChildScrollView(
+        child: ColorPicker(
+          pickerColor: selectedColor, // Initial color
+          onColorChanged: (Color color) {
+            selectedColor = color; // Update selected color when changed
+          },
+          pickerAreaHeightPercent: 0.8,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(), // Cancel without saving
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(selectedColor); // Return the selected color
+          },
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
   @override
   Widget build(BuildContext context) {
+    
     return DefaultTabController(
-      length: 7,
+      length: 8,
       initialIndex: 1,
       child: Scaffold(
-        backgroundColor: Colors.grey[850],
+        
         appBar: AppBar(
           // the title of the bar will update depending on what column you have
           // currently selected
@@ -416,7 +546,8 @@ class _HomeState extends State<Home> {
               Tab(text: "Messages"),
               Tab(text: "Files"),
               Tab(text: "Meetings"),
-              Tab(text: "Contribution Report")
+              Tab(text: "Contribution Report"),
+              Tab(text: "Settings"),
             ],
           ),
         ),
@@ -428,7 +559,8 @@ class _HomeState extends State<Home> {
           createMessages(),
           createFiles(),
           createMeetings(),
-          createContributionReportBody()
+          createContributionReportBody(),
+          createSettingsBody(),
         ]),
       ),
     );
