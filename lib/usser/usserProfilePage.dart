@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:sevenc_iteration_two/usser/usserObject.dart';
 
-class usserProfile extends StatelessWidget {
+class UsserProfile extends StatelessWidget {
+  final Usser usser;
+
+  const UsserProfile({Key? key, required this.usser}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -10,8 +15,24 @@ class usserProfile extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              profilePhoto(imageUrl: "placeholder", name: "name"),
-              Text('Row Item 2'),
+              profilePhoto(imageUrl: usser.profilePic, name: usser.usserName),
+
+              // Use FutureBuilder for async task retrieval
+              FutureBuilder<List<task>>(
+                future: usser.getTasksAsync(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    return SizedBox(
+                      width: 200,
+                      child: taskList(snapshot.data ?? []),
+                    );
+                  }
+                },
+              ),
             ],
           ),
           Expanded(
@@ -73,6 +94,28 @@ class profilePhoto extends StatelessWidget {
     );
   }
 }
+
+Widget taskList(List<task> tasks) {
+  return Container(
+    height: 300, // Adjust height as needed
+    padding: EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.grey),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Scrollbar(
+      child: ListView.builder(
+        itemCount: tasks.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(tasks[index].name!),
+          );
+        },
+      ),
+    ),
+  );
+}
+
 
 
 

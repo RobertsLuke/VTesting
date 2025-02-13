@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import 'package:sevenc_iteration_two/testingNavigation.dart';
 //import 'package:sevenc_iteration_two/userProfile/profile.dart';
 import 'package:postgres/postgres.dart';
+import 'package:sevenc_iteration_two/usser/usserObject.dart';
 
 import './login/login.dart';
 import './join/join.dart';
@@ -31,7 +32,7 @@ void main() {
             "/navigation": (context) => const NavigationPage(),
             "/login": (context) => const LoginScreen(),
             "/join": (context) => const JoinProject(),
-            "/usserProfile": (context) => usserProfile(),
+            "/usserProfile": (context) => UsserProfile(usser: mockUsser),
 
           }
       )
