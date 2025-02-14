@@ -24,7 +24,7 @@ class Usser {
     this.tasks = const [],
   }) {
     uploadUsser();
-    usserID = getID();
+    final usserID = getID();
   }
 
   factory Usser.fromJson(Map<String, dynamic> json) {
@@ -57,13 +57,13 @@ class Usser {
   }
 
   // gets the user id based on the user's email and username
-  Future<dynamic> getID() async {
+  Future<String> getID() async {
     // this function will upload the usser object to the database
 
     final Uri request = Uri.parse("http://127.0.0.1:5000/get/user/id?username=$usserName&email=$email");
 
     // set to dynamic since it may not return an integer if there is no id
-    dynamic id;
+    String id = '';
 
     try {
       // using http to asynchronously get the information from flask
