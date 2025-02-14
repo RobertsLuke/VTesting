@@ -120,7 +120,7 @@ class Usser {
     // COME BACK TO THIS LATER
   }
 
-  Future<String> getprojects() async{
+  Future<String> getProjects() async{
     // this function will get the projects that the usser is a part of
     // THIS FUNCTION IS A WORK IN PROGRESS SO THERE MAY BE UNEXPECTED BEHAVIOUR
 
