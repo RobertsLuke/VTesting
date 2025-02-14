@@ -1,3 +1,4 @@
+import 'package:http/http.dart' as http;
 import 'package:sevenc_iteration_two/usser/usserProfilePage.dart';
 
 class Usser {
@@ -55,20 +56,101 @@ class Usser {
     };
   }
 
-  String getID() {
-    return DateTime.now().millisecondsSinceEpoch.toString();
+  // gets the user id based on the user's email and username
+  Future<dynamic> getID() async {
+    // this function will upload the usser object to the database
+
+    final Uri request = Uri.parse("http://127.0.0.1:5000/get/user/id?username=$usserName&email=$email");
+
+    // set to dynamic since it may not return an integer if there is no id
+    dynamic id;
+
+    try {
+      // using http to asynchronously get the information from flask
+      final response = await http.get(request);
+
+      if (response.statusCode == 200 ) {
+        // if the response was successful you will get the expected information
+        print(response.body);
+        id = response.body;
+      }
+      else {
+        // if you do not get a valid status code you will be returned an invalid
+        // status code
+        print(response.statusCode);
+      }
+    }
+    catch (e) {
+      // catching any exceptions
+      print(e);
+    }
+
+    return id;
   }
 
-  void uploadUsser(){
+  Future<void> uploadUsser() async{
     // this function will upload the usser object to the database
+
+    final Uri request = Uri.parse("http://127.0.0.1:5000/create/profile?username=$usserName&email=$email");
+
+    try {
+      // using http to asynchronously get the information from flask
+      final response = await http.get(request);
+
+      if (response.statusCode == 200 ) {
+        // if the response was successful you will get the expected information
+        print(response.body);
+      }
+      else {
+        // if you do not get a valid status code you will be returned an invalid
+        // status code
+        print(response.statusCode);
+      }
+    }
+    catch (e) {
+      // catching any exceptions
+      print(e);
+    }
+
   }
 
   void updateUsser(){
     // this function will update the usser object in the database
+
+    // COME BACK TO THIS LATER
   }
 
-  void getprojedcts(){
+  Future<String> getprojects() async{
     // this function will get the projects that the usser is a part of
+    // THIS FUNCTION IS A WORK IN PROGRESS SO THERE MAY BE UNEXPECTED BEHAVIOUR
+
+    dynamic id = getID();
+
+    final Uri request = Uri.parse("http://127.0.0.1:5000/get/user/projects?user_id=$id");
+
+    String projects = '';
+
+    try {
+      // using http to asynchronously get the information from flask
+      final response = await http.get(request);
+
+      if (response.statusCode == 200 ) {
+        // if the response was successful you will get the expected information
+        print(response.body);
+        projects = response.body;
+      }
+      else {
+        // if you do not get a valid status code you will be returned an invalid
+        // status code
+        print(response.statusCode);
+      }
+    }
+    catch (e) {
+      // catching any exceptions
+      print(e);
+    }
+
+    return projects;
   }
 
   Future<List<task>> getTasksAsync() async {
