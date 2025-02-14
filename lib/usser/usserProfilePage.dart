@@ -15,7 +15,7 @@ class UsserProfile extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              profilePhoto(imageUrl: usser.profilePic, name: usser.usserName),
+              profilePhoto(imageUrl: usser.profilePic!, name: usser.usserName),
 
               // Use FutureBuilder for async task retrieval
               FutureBuilder<List<task>>(

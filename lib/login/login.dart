@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'validation.dart';
 import 'input_field_containers.dart';
+import '../usser/usserObject.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,8 +22,37 @@ class _LoginScreenState extends State<LoginScreen> {
     final double width = size.width;
     final double height = size.height;
 
+    // this function will be called when submit button is pressed
     void submitAction() {
-      if (_formKey.currentState!.validate()) {}
+      // validates form
+      if (_formKey.currentState!.validate()) {
+        // if form validates successfully then this block executes
+
+        // checks if the user is trying to log in or sign up
+        if (isLoginMode) {
+
+        }
+        // the user is trying to sign up
+        else {
+          Usser user = Usser(username.text, email.text, password.text, 'Light', null, 0, {});
+
+          // can't simplify expression because method may return null
+          if (user.checkUsserExists() == false) {
+            // if the user does not exist, then you can insert the user into the
+            // database
+            user.uploadUsser();
+            print("uploaded user");
+          }
+          else if (user.checkUsserExists() == true) {
+            // user exists
+            print("The username and email already exists!");
+          }
+          else {
+            // null, means there was an error communicating with flask
+
+          }
+        }
+      }
     }
 
     void changePageState() {

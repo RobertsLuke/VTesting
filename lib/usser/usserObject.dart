@@ -7,26 +7,23 @@ class Usser {
   String email;
   String usserPassword;
   String theme;
-  String profilePic;
-  double currancyTotal;
+  String? profilePic;
+  int currancyTotal;
   Map<String, dynamic> settings;
   Map<int, String> usserData = {};
   List<task> tasks = [];
 
-  Usser({
-    required this.usserName,
-    required this.email,
-    required this.usserPassword,
-    required this.theme,
-    required this.profilePic,
-    required this.currancyTotal,
-    required this.settings,
-    this.tasks = const [],
-  }) {
-    uploadUsser();
-    final usserID = getID();
-  }
+  Usser(
+    this.usserName,
+    this.email,
+    this.usserPassword,
+    this.theme,
+    this.profilePic,
+    this.currancyTotal,
+    this.settings,
+  );
 
+  /*
   factory Usser.fromJson(Map<String, dynamic> json) {
     Usser usser = Usser(
       usserName: json['usserName'],
@@ -55,6 +52,7 @@ class Usser {
       'usserData': usserData.map((key, value) => MapEntry(key.toString(), value)),
     };
   }
+   */
 
   // gets the user id based on the user's email and username
   Future<String> getID() async {
@@ -91,25 +89,21 @@ class Usser {
   Future<void> uploadUsser() async{
     // this function will upload the usser object to the database
 
-    final Uri request = Uri.parse("http://127.0.0.1:5000/create/profile?username=$usserName&email=$email");
+    final Uri request = Uri.parse("http://127.0.0.1:5000/create/profile?username=$usserName&email=$email&password=$usserPassword");
 
-    try {
+
       // using http to asynchronously get the information from flask
-      final response = await http.get(request);
+    final response = await http.get(request);
 
-      if (response.statusCode == 200 ) {
+    if (response.statusCode == 200 ) {
         // if the response was successful you will get the expected information
-        print(response.body);
-      }
-      else {
-        // if you do not get a valid status code you will be returned an invalid
-        // status code
-        print(response.statusCode);
-      }
+      print(response.body);
+      print("in here");
     }
-    catch (e) {
-      // catching any exceptions
-      print(e);
+    else {
+      // if you do not get a valid status code you will be returned an invalid
+      // status code
+      print(response.statusCode);
     }
 
   }
@@ -153,6 +147,47 @@ class Usser {
     return projects;
   }
 
+    Future<bool?> checkUsserExists() async {
+      // checks if a user exists
+
+      final Uri request = Uri.parse("http://127.0.0.1:5000/check/user/exists?name=$usserName&email=$email");
+
+      bool userExists;
+
+      try {
+        // using http to asynchronously get the information from flask
+        final response = await http.get(request);
+
+        if (response.statusCode == 200 ) {
+          // if the response was successful you will get the expected information
+          print(response.body);
+
+          // response body is always going to be a string, hence why i have to
+          // convert it to type bool
+          if (response.body == "True") {
+            userExists = true;
+          }
+          else {
+            userExists = false;
+          }
+
+          return userExists;
+        }
+        else {
+          // if you do not get a valid status code you will be returned an invalid
+          // status code
+          print(response.statusCode);
+        }
+      }
+      catch (e) {
+        // catching any exceptions
+        print(e);
+      }
+
+      // returns null if there is an issue getting a response from the server
+      return null;
+    }
+
   Future<List<task>> getTasksAsync() async {
     await Future.delayed(Duration(seconds: 2)); // Simulate network delay
     return tasks; // Return stored tasks
@@ -168,7 +203,7 @@ class task {
   task({this.name, this.description, this.dueDate});
 }
 
-
+/*
 Usser mockUsser = Usser(
     usserName: "John Doe",
     email: "john@example.com",
@@ -189,3 +224,5 @@ Usser mockUsser = Usser(
       task(name: "Task 3"),
     ]
 );
+
+ */
