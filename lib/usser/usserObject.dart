@@ -2,7 +2,9 @@ import 'package:http/http.dart' as http;
 import 'package:sevenc_iteration_two/usser/usserProfilePage.dart';
 
 class Usser {
-  late String usserID;
+  // set the value of the usserID to an empty String initially so you can
+  // check if the user exists in the database, given the email and password
+  String usserID = '';
   String usserName;
   String email;
   String usserPassword;
@@ -11,54 +13,25 @@ class Usser {
   int currancyTotal;
   Map<String, dynamic> settings;
   Map<int, String> usserData = {};
-  List<task> tasks = [];
 
-  Usser(
-    this.usserName,
-    this.email,
-    this.usserPassword,
-    this.theme,
-    this.profilePic,
-    this.currancyTotal,
-    this.settings,
-  );
+  // setting the type to include list of dynamic which will change to Task when
+  // the Task class is established
+  List<dynamic> tasks = [];
 
-  /*
-  factory Usser.fromJson(Map<String, dynamic> json) {
-    Usser usser = Usser(
-      usserName: json['usserName'],
-      email: json['email'],
-      usserPassword: json['usserPassword'],
-      theme: json['theme'],
-      profilePic: json['profilePic'],
-      currancyTotal: (json['currancyTotal'] as num).toDouble(),
-      settings: json['settings'] ?? {},
-    );
-    usser.usserID = json['usserID'] ?? usser.getID();
-    usser.usserData = (json['usserData'] as Map<String, dynamic>?)?.map((key, value) => MapEntry(int.parse(key), value as String)) ?? {};
-    return usser;
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'usserID': usserID,
-      'usserName': usserName,
-      'email': email,
-      'usserPassword': usserPassword,
-      'theme': theme,
-      'profilePic': profilePic,
-      'currancyTotal': currancyTotal,
-      'settings': settings,
-      'usserData': usserData.map((key, value) => MapEntry(key.toString(), value)),
-    };
-  }
-   */
+  Usser(this.usserName,
+      this.email,
+      this.usserPassword,
+      this.theme,
+      this.profilePic,
+      this.currancyTotal,
+      this.settings,);
 
   // gets the user id based on the user's email and username
   Future<String> getID() async {
-    // this function will upload the usser object to the database
+    // this function will return the id of the user from the database
 
-    final Uri request = Uri.parse("http://127.0.0.1:5000/get/user/id?username=$usserName&email=$email");
+    final Uri request = Uri.parse(
+        "http://127.0.0.1:5000/get/user/id?email=$email");
 
     // set to dynamic since it may not return an integer if there is no id
     String id = '';
@@ -67,10 +40,11 @@ class Usser {
       // using http to asynchronously get the information from flask
       final response = await http.get(request);
 
-      if (response.statusCode == 200 ) {
+      if (response.statusCode == 200) {
         // if the response was successful you will get the expected information
         print(response.body);
         id = response.body;
+        print("IN STATUS CODE 200");
       }
       else {
         // if you do not get a valid status code you will be returned an invalid
@@ -81,46 +55,56 @@ class Usser {
     catch (e) {
       // catching any exceptions
       print(e);
+      print("IN EXCEPTION");
+    }
+
+    // if the value of id is not empty (user exists in the database) then you
+    // can update the id attribute of the user instance
+
+    // -- this part needs to be tested and may need to be removed --
+
+    if (id != '') {
+      usserID = id;
     }
 
     return id;
   }
 
-  Future<void> uploadUsser() async{
+  Future<void> uploadUsser() async {
     // this function will upload the usser object to the database
 
-    final Uri request = Uri.parse("http://127.0.0.1:5000/create/profile?username=$usserName&email=$email&password=$usserPassword");
+    final Uri request = Uri.parse(
+        "http://127.0.0.1:5000/create/profile?username=$usserName&email=$email&password=$usserPassword");
 
 
-      // using http to asynchronously get the information from flask
+    // using http to asynchronously get the information from flask
     final response = await http.get(request);
 
-    if (response.statusCode == 200 ) {
-        // if the response was successful you will get the expected information
+    if (response.statusCode == 200) {
+      // if the response was successful you will get the expected information
       print(response.body);
-      print("in here");
     }
     else {
       // if you do not get a valid status code you will be returned an invalid
       // status code
       print(response.statusCode);
     }
-
   }
 
-  void updateUsser(){
+  void updateUsser() {
     // this function will update the usser object in the database
 
     // COME BACK TO THIS LATER
   }
 
-  Future<String> getProjects() async{
+  Future<String> getProjects() async {
     // this function will get the projects that the usser is a part of
     // THIS FUNCTION IS A WORK IN PROGRESS SO THERE MAY BE UNEXPECTED BEHAVIOUR
 
     dynamic id = getID();
 
-    final Uri request = Uri.parse("http://127.0.0.1:5000/get/user/projects?user_id=$id");
+    final Uri request = Uri.parse(
+        "http://127.0.0.1:5000/get/user/projects?user_id=$id");
 
     String projects = '';
 
@@ -128,7 +112,7 @@ class Usser {
       // using http to asynchronously get the information from flask
       final response = await http.get(request);
 
-      if (response.statusCode == 200 ) {
+      if (response.statusCode == 200) {
         // if the response was successful you will get the expected information
         print(response.body);
         projects = response.body;
@@ -147,82 +131,151 @@ class Usser {
     return projects;
   }
 
-    Future<bool?> checkUsserExists() async {
-      // checks if a user exists
+  Future<bool?> checkUsserExists() async {
+    // checks if a user exists
 
-      final Uri request = Uri.parse("http://127.0.0.1:5000/check/user/exists?name=$usserName&email=$email");
+    final Uri request = Uri.parse(
+        "http://127.0.0.1:5000/check/user/exists?name=$usserName&email=$email");
 
-      bool userExists;
+    bool userExists;
 
-      try {
-        // using http to asynchronously get the information from flask
-        final response = await http.get(request);
+    try {
+      // using http to asynchronously get the information from flask
+      final response = await http.get(request);
 
-        if (response.statusCode == 200 ) {
-          // if the response was successful you will get the expected information
-          print(response.body);
+      if (response.statusCode == 200) {
+        // if the response was successful you will get the expected information
+        print(response.body);
 
-          // response body is always going to be a string, hence why i have to
-          // convert it to type bool
-          if (response.body == "True") {
-            userExists = true;
-          }
-          else {
-            userExists = false;
-          }
-
-          return userExists;
+        // response body is always going to be a string, hence why i have to
+        // convert it to type bool
+        if (response.body == "True") {
+          userExists = true;
         }
         else {
-          // if you do not get a valid status code you will be returned an invalid
-          // status code
+          userExists = false;
+        }
+
+        return userExists;
+      }
+      else {
+        // if you do not get a valid status code you will be returned an invalid
+        // status code
+        print(response.statusCode);
+      }
+    }
+    catch (e) {
+      // catching any exceptions
+      print(e);
+    }
+
+    // returns null if there is an issue getting a response from the server
+    return null;
+  }
+
+  Future<String?> getTheme() async {
+    // this function will get the theme given an id
+
+
+    // if you don't await the method, the type will be Future<String> which will
+    // not be possible to compare to a String as they are not of the same type
+    String id = await getID();
+
+    if (id == '') {
+      print("The user does not exist within the database");
+      // return null if the user does not exist!
+      return null;
+    }
+    else {
+      final Uri request = Uri.parse(
+          "http://127.0.0.1:5000/get/user/theme?user_id=$id");
+
+      String? userTheme;
+
+      try {
+        final response = await http.get(request);
+
+        if (response.statusCode == 200) {
+          print(response.body);
+          userTheme = response.body;
+        }
+        else {
           print(response.statusCode);
         }
       }
       catch (e) {
-        // catching any exceptions
         print(e);
       }
 
-      // returns null if there is an issue getting a response from the server
+      return userTheme;
+    }
+  }
+
+  Future<void> changeTheme() async {
+    // this function will change the attribute of the theme if a stored value
+    // exists within the database
+
+    String? userTheme = await getTheme();
+    if (userTheme != null) {
+      userTheme = userTheme;
+    }
+  }
+
+  Future<String?> getPassword() async {
+    // will get the password of a user with the associated ID
+
+    if (usserID == '') {
+      // the user does not exist in the database so there is no password to
+      // retrieve
       return null;
     }
+    else {
+      final Uri request = Uri.parse(
+          "http://127.0.0.1:5000/get/user/password?user_id=$usserID");
+      try {
+        final response = await http.get(request);
 
-  Future<List<task>> getTasksAsync() async {
-    await Future.delayed(Duration(seconds: 2)); // Simulate network delay
-    return tasks; // Return stored tasks
+        if (response.statusCode == 200) {
+          return response.body;
+        }
+        else {
+          print(response.statusCode);
+        }
+      }
+      catch (e) {
+        print(e);
+      }
+    }
+    return null;
+  }
+
+  Future<bool?> passwordCorrect() async {
+    // function will compare the user's password to the password stored within the
+    // database. Returns true if the password is correct, false if the password
+    // is incorrect and null if the password is incorrect
+
+    String? databasePassword = await getPassword();
+    // will return null if there is no database password
+    if (databasePassword == null) {
+      return null;
+    }
+    else {
+      return (usserPassword == databasePassword) ? true : false;
+    }
+  }
+
+  Future<void> updateUsername() async {
+    // this function will return the username of the user given their email
+    // and updates the object's usserName
+
+    final Uri request = Uri.parse("http://127.0.0.1:5000/get/username?email=$email");
+
+    try {
+      final response = await http.get(request);
+
+      if (response.statusCode == 200) { usserName = response.body; }
+      else { print(response.statusCode); }
+    }
+    catch (e) { print(e); }
   }
 }
-
-
-class task {
-  // placholder to be replaced
-  final String? name;
-  final String? description;
-  final String? dueDate;
-  task({this.name, this.description, this.dueDate});
-}
-
-/*
-Usser mockUsser = Usser(
-    usserName: "John Doe",
-    email: "john@example.com",
-    usserPassword: "password123",
-    theme: "dark",
-    profilePic: "https://example.com/profile.jpg",
-    currancyTotal: 100.0,
-    settings: {},
-    tasks: [
-      task(name: "Task 1"),
-      task(name: "Task 2"),
-      task(name: "Task 3"),
-      task(name: "Task 1"),
-      task(name: "Task 2"),
-      task(name: "Task 3"),
-      task(name: "Task 1"),
-      task(name: "Task 2"),
-      task(name: "Task 3"),
-    ]
-);
-
- */

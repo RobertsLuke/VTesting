@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sevenc_iteration_two/usser/usserObject.dart';
 
+/*
 class UsserProfile extends StatelessWidget {
   final Usser usser;
 
@@ -116,6 +117,7 @@ Widget taskList(List<task> tasks) {
   );
 }
 
+ */
 
 
 
