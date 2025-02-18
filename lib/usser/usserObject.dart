@@ -135,7 +135,7 @@ class Usser {
     // checks if a user exists
 
     final Uri request = Uri.parse(
-        "http://127.0.0.1:5000/check/user/exists?name=$usserName&email=$email");
+        "http://127.0.0.1:5000/check/user/exists?email=$email");
 
     bool userExists;
 

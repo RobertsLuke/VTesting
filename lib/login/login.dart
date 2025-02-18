@@ -25,7 +25,11 @@ class _LoginScreenState extends State<LoginScreen> {
     // this function will be called when submit button is pressed
     void submitAction() async {
       print('BUTTON PRESSED');
-      setState(() { passwordErrorText = null;});
+      setState(() {
+        emailErrorText = null;
+        usernameErrorText = null;
+        passwordErrorText = null;
+      });
       print('BUTTON PRESSED2');
 
       // validates form
@@ -94,7 +98,10 @@ class _LoginScreenState extends State<LoginScreen> {
           }
           else if (usserExists == true) {
             // user exists
-            print("The username and email already exists!");
+            setState(() {
+              emailErrorText = "Email already in use";
+            });
+            print("email already exists!");
           }
           else {
             // null, means there was an error communicating with flask
