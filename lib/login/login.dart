@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // this function will be called when submit button is pressed
     void submitAction() async {
       print('BUTTON PRESSED');
-      setState(() { passwordErrorText = "";});
+      setState(() { passwordErrorText = null;});
       print('BUTTON PRESSED2');
 
       // validates form
@@ -36,7 +36,6 @@ class _LoginScreenState extends State<LoginScreen> {
         Usser user = Usser(username.text, email.text, password.text, 'Light', null, 0, {});
         // the user is trying to login
         if (isLoginMode) {
-          print('IN LOGIN MODE');
           // will query to check the user's id in the database if they exist,
           // will also update the object's usserId if it exists
           String id = await user.getID();
@@ -47,12 +46,10 @@ class _LoginScreenState extends State<LoginScreen> {
             // need a way to be able to call the form field to add validation
             // to the input box to tell the user the username and email does not
             // exist
-            print("ID IS NOTHING");
           }
           else {
             // the user exists within the database. Have to check the user's
             // inputted password with the stored password
-            print("ID IS SOMETHING");
             bool? isPasswordCorrect =  await user.passwordCorrect();
 
             // not worrying about it being null because the id check before
@@ -72,26 +69,27 @@ class _LoginScreenState extends State<LoginScreen> {
               // the password is incorrect so need to update the text form field
               // to let the user know that they've inputted the incorrect password
               setState(() { passwordErrorText = "Incorrect Password";});
-              print('PASSWORD NEEDS TO BE CHANGED');
 
             }
           }
-          print('FINISHED');
         }
         // the user is trying to sign up
         else {
-          // Usser user = Usser(username.text, email.text, password.text, 'Light', null, 0, {});
+          print("USER IF TRYING TO SIGN UP");
 
-          Future<bool?> usserExists = user.checkUsserExists();
+          bool? usserExists = await user.checkUsserExists();
+
+          print("CALLED METHOD");
 
           // can't simplify expression because method may return null
           if (usserExists == false) {
             // if the user does not exist, then you can insert the user into the
             // database
+            print("going to create profile in database...");
             user.uploadUsser();
             print("uploaded user");
 
-
+            // navigate to appropriate screen
             // NOW YOU CAN INSERT THE NAVIGATION TO THE PROJECT SCREEN
           }
           else if (usserExists == true) {
