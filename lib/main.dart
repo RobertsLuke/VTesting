@@ -25,7 +25,7 @@ void main() {
           themeMode: ThemeMode.dark, // Choose the theme mode (Change .dark with .light if needed)
 
         // setting up initial routes to different screens, loading up login first
-          initialRoute: "/login",
+          initialRoute: "/join",
         // replace the "/navigation" with the page you are testing if you dont want to go through navigation
           routes: {
             "/home": (context) => const Home(),
