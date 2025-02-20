@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'settings_page.dart';
 
 
 
@@ -394,7 +394,7 @@ class _HomeState extends State<Home> {
   }
 
   // creates Settings tab
-  Widget createSettingsBody() {
+  /*Widget createSettingsBody() {
     final theme = Theme.of(context);
   return Consumer<ThemeProvider>(
     builder: (context, themeProvider, child) {
@@ -518,7 +518,7 @@ Future<Color?> _showColorPicker(BuildContext context, Color currentColor) async 
       ],
     ),
   );
-}
+}*/
 
 
 
@@ -536,6 +536,17 @@ Future<Color?> _showColorPicker(BuildContext context, Color currentColor) async 
           title: Text(screenTitle),
           // the bottom will be the list of columns you can switch between to
           // switch tabs
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
+              },
+            ),
+          ],
           bottom: const TabBar(
             tabs: <Widget>[
               Tab(text: "Home"),
@@ -547,7 +558,6 @@ Future<Color?> _showColorPicker(BuildContext context, Color currentColor) async 
               Tab(text: "Files"),
               Tab(text: "Meetings"),
               Tab(text: "Contribution Report"),
-              Tab(text: "Settings"),
             ],
           ),
         ),
@@ -559,8 +569,7 @@ Future<Color?> _showColorPicker(BuildContext context, Color currentColor) async 
           createMessages(),
           createFiles(),
           createMeetings(),
-          createContributionReportBody(),
-          createSettingsBody(),
+          createContributionReportBody(),          
         ]),
       ),
     );
