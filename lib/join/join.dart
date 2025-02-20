@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'project.dart';
 
 class JoinProject extends StatefulWidget {
   const JoinProject({super.key});
@@ -15,6 +16,7 @@ class _JoinProjectState extends State<JoinProject> {
   // creating controllers so you can retrieve the text value from the input fields
   final idController = TextEditingController();
   final passwordController = TextEditingController();
+  DateTime? selectedDueDate;
 
   // this variable dictates the state of the screen. When equal to true, it will
   // allow the user to join a group. When equal to false, it will allow the user
@@ -41,7 +43,6 @@ class _JoinProjectState extends State<JoinProject> {
 
   Container dueDateContainer() {
     DateTime currentTime = DateTime.now();
-    DateTime finalDateInCalendar = DateTime(currentTime.year + 5, currentTime.month, currentTime.day);
 
     return Container(
         child: Column(
@@ -65,7 +66,9 @@ class _JoinProjectState extends State<JoinProject> {
           initialDate: currentTime,
           firstDate: currentTime,
           lastDate: finalDateInCalendar,
-          onDateChanged: (selectedDate) {}
+          onDateChanged: (selectedDate) {
+            selectedDueDate = selectedDate;
+          }
       ),
     );
   }
@@ -91,6 +94,29 @@ class _JoinProjectState extends State<JoinProject> {
 
     // validate the form key. Will trigger the validator in the input field's TextFormField
     if (_formKey.currentState!.validate()) {
+      // if form validates successfully, this block will execute
+
+      // if you are trying to create a project
+      if (!joinMode && selectedDueDate != null) {
+          // if the selected due date on the calendar is not chosen, then the
+          // user will NOT be able to create a group
+
+          Project project = Project(idController.text, passwordController.text, [],
+              selectedDueDate);
+
+          project.generateUuid();
+
+
+
+
+      }
+      else if (joinMode) {
+        // trying to join a group
+
+        Project project = Project(idController.text, passwordController.text, []);
+
+
+      }
 
     }
     print(idController.text);
@@ -130,9 +156,9 @@ class _JoinProjectState extends State<JoinProject> {
                     const SizedBox(height: 10),
                     Text((joinMode)?"Join Group": "Create Group", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[800]),),
                     const SizedBox(height: 100),
-                    Align(alignment: Alignment.centerLeft,child: Text("Group Name", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),),
+                    Align(alignment: Alignment.centerLeft,child: Text((joinMode)?"Group ID": "Group Name", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),),
                     // change the max input length to match specification in user requirements
-                    createInputField(idController, "Enter Group ID", 10, idInputValidator),
+                    createInputField(idController, (joinMode)?"Enter Group ID": "Enter Project Name", 10, idInputValidator),
                     const SizedBox(height: 100),
                     Align(alignment: Alignment.centerLeft, child: Text("Group Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300]))),
                     createInputField(passwordController, "Enter Group Password", 10, passwordInputValidator),
