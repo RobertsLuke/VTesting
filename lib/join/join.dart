@@ -123,29 +123,33 @@ class _JoinProjectState extends State<JoinProject> {
             SizedBox(
               width: width / 3,
               height: height,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 10),
-                  Text((joinMode)?"Join Group": "Create Group", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[800]),),
-                  const SizedBox(height: 100),
-                  Align(alignment: Alignment.centerLeft,child: Text("Group Name", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),),
-                  // change the max input length to match specification in user requirements
-                  createInputField(idController, "Enter Group ID", 10, idInputValidator),
-                  const SizedBox(height: 100),
-                  Align(alignment: Alignment.centerLeft, child: Text("Group Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300]))),
-                  createInputField(passwordController, "Enter Group Password", 10, passwordInputValidator),
-                  // const SizedBox(height: 100),
-                  (joinMode)?  const SizedBox(height: 100): dueDateContainer(),
-                  ElevatedButton(
-                      onPressed: submitAction,
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[800]),
-                      child: const Text("Submit", style: TextStyle(color: Colors.white),)
-                  ),
-                  const SizedBox(height: 50,),
-                  GestureDetector(child: Text((joinMode)?"Want to create Project?": "Want to join a Project?", style: const TextStyle(color: Colors.white70),), onTap: () {changePageState();}),
-                ],
+              child: ListView(
+                children: [Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 10),
+                    Text((joinMode)?"Join Group": "Create Group", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue[800]),),
+                    const SizedBox(height: 100),
+                    Align(alignment: Alignment.centerLeft,child: Text("Group Name", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),),
+                    // change the max input length to match specification in user requirements
+                    createInputField(idController, "Enter Group ID", 10, idInputValidator),
+                    const SizedBox(height: 100),
+                    Align(alignment: Alignment.centerLeft, child: Text("Group Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300]))),
+                    createInputField(passwordController, "Enter Group Password", 10, passwordInputValidator),
+                    // const SizedBox(height: 100),
+                    (joinMode)?  const SizedBox(height: 100): dueDateContainer(),
+                    ElevatedButton(
+                        onPressed: submitAction,
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[800]),
+                        child: const Text("Submit", style: TextStyle(color: Colors.white),)
+                    ),
+                    const SizedBox(height: 50,),
+                    GestureDetector(child: Text((joinMode)?"Want to create Project?": "Want to join a Project?", style: const TextStyle(color: Colors.white70),), onTap: () {changePageState();}),
+                    const SizedBox(height: 10,)
+                  ],
+                ),
+              ]
               ),
             ),
             SizedBox(width: width / 3,),

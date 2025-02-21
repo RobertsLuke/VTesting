@@ -1,8 +1,4 @@
-CREATE DATABASE software_engineering_iteration2;
-
-\c software_engineering_iteration2;
-
-CREATE USER admin WITH PASSWORD '1234' SUPERUSER;
+-- THIS FILE IS EXECUTED LOCALLY FOR PG ADMIN
 
 -- DOUBLE CHECK THE DIFFERENT OPTIONS
 CREATE TYPE notification_enum AS ENUM ('Daily', 'Weekly');
