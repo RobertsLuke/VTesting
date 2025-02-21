@@ -1,8 +1,10 @@
 import '../usser/usserObject.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
 
-class Project {
+class Project extends ChangeNotifier {
   String? projectUuid;
   String name;
   String joinCode;
@@ -17,7 +19,9 @@ class Project {
     // method to ensure that uuid isn't already associated to a project otherwise
     // have to regenerate a new uuid
 
-    final Uri request = Uri.parse("http://127.0.0.1:5000/get/user/id?email=$tempUuid");
+    final Uri request = Uri.parse("http://127.0.0.1:5000/check/project/uuid/exists?uuid=$tempUuid");
+    print("Inside uuidexists, tempUuid=$tempUuid");
+
 
     try {
       // using http to asynchronously get the information from flask
@@ -44,7 +48,7 @@ class Project {
     return null;
   }
 
-  void generateUuid() async{
+  Future<void> generateUuid() async{
     // method to generate the uuid, need to ensure that there isn't another
     // project which already uses this uuid
 
@@ -56,10 +60,13 @@ class Project {
     while (exists == true) {
       String tempUuid = uuid.v6();
 
+      print(tempUuid);
+      print(tempUuid.length);
       // if the uuid doesn't exist inside the database, then you can store it
       // inside the database and move on
 
       exists = await uuidExists(tempUuid);
+      print("Exists: $exists");
       if (exists == false) {
         projectUuid = tempUuid;
         // uploadUuid(tempUuid);
@@ -110,7 +117,8 @@ class Project {
   Future<void> uploadProjectDatabase() async {
     // this function will be responsible for uploading the project to the database
     final Uri request = Uri.parse(
-        "http://127.0.0.1:5000/get/user/id?uuid=$projectUuid&name=$name&join=$joinCode&due=$dueDate");
+        "http://127.0.0.1:5000/get/user/id?uuid=$projectUuid"
+            "&name=$name&join=$joinCode&due=$dueDate");
 
     try {
       // using http to asynchronously get the information from flask

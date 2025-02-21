@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'validation.dart';
 import 'input_field_containers.dart';
 import '../usser/usserObject.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -37,12 +38,19 @@ class _LoginScreenState extends State<LoginScreen> {
         print('BUTTON PRESSED3');
         // if form validates successfully then this block executes
 
+        context.read<Usser>().usserName = username.text;
+        context.read<Usser>().email = email.text;
+        context.read<Usser>().usserPassword = password.text;
+
+        /*
         Usser user = Usser(username.text, email.text, password.text, 'Light', null, 0, {});
+         */
+
         // the user is trying to login
         if (isLoginMode) {
           // will query to check the user's id in the database if they exist,
           // will also update the object's usserId if it exists
-          String id = await user.getID();
+          String id = await context.read<Usser>().getID();
           print(id);
           if (id == '') {
             // this means that the user does not exist within the database
@@ -50,11 +58,21 @@ class _LoginScreenState extends State<LoginScreen> {
             // need a way to be able to call the form field to add validation
             // to the input box to tell the user the username and email does not
             // exist
+            setState(() {
+              emailErrorText = "Email does not exist";
+            });
           }
           else {
             // the user exists within the database. Have to check the user's
             // inputted password with the stored password
-            bool? isPasswordCorrect =  await user.passwordCorrect();
+            bool? isPasswordCorrect =  await context.read<Usser>().passwordCorrect();
+
+
+            print("Password: ${context.read<Usser>().usserPassword}");
+            print("Username: ${context.read<Usser>().usserName}");
+            print("Email: ${context.read<Usser>().email}");
+            print(isPasswordCorrect);
+            print('password checked');
 
             // not worrying about it being null because the id check before
             // hand will check to see if the user is stored in the database
@@ -62,17 +80,24 @@ class _LoginScreenState extends State<LoginScreen> {
               // this means that the user exists and the password is correct so
               // you can navigate the user to the appropriate screen
 
+              print('password correct');
+
               // need to get the user's username as if they are logging in,
               // they won't be prompted to enter their username
-              user.updateUsername();
+              context.read<Usser>().updateUsername();
 
               // ADD NAVIGATION TO OTHER SCREEN
-              print("can add navigation to other screen");
+              // CURRENTLY SETTING IT TO JOIN SCREEN BUT THINK ABOUT HOW
+              // WE WANT TO HANDLE THIS
+              Navigator.pushNamed(context, "/join");
             }
             else {
               // the password is incorrect so need to update the text form field
               // to let the user know that they've inputted the incorrect password
+              print('password incorrect');
+
               setState(() { passwordErrorText = "Incorrect Password";});
+
 
             }
           }
@@ -81,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
         else {
           print("USER IF TRYING TO SIGN UP");
 
-          bool? usserExists = await user.checkUsserExists();
+          bool? usserExists = await context.read<Usser>().checkUsserExists();
 
           print("CALLED METHOD");
 
@@ -90,11 +115,11 @@ class _LoginScreenState extends State<LoginScreen> {
             // if the user does not exist, then you can insert the user into the
             // database
             print("going to create profile in database...");
-            user.uploadUsser();
+            context.read<Usser>().uploadUsser();
             print("uploaded user");
 
             // navigate to appropriate screen
-            // NOW YOU CAN INSERT THE NAVIGATION TO THE PROJECT SCREEN
+            Navigator.pushNamed(context, "/join");
           }
           else if (usserExists == true) {
             // user exists

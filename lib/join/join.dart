@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../usser/usserObject.dart';
 import 'project.dart';
+import 'package:provider/provider.dart';
 
 class JoinProject extends StatefulWidget {
   const JoinProject({super.key});
@@ -90,7 +92,7 @@ class _JoinProjectState extends State<JoinProject> {
   }
 
   // this function will be called when the user taps the submit button
-  void submitAction() {
+  void submitAction() async {
 
     // validate the form key. Will trigger the validator in the input field's TextFormField
     if (_formKey.currentState!.validate()) {
@@ -101,19 +103,37 @@ class _JoinProjectState extends State<JoinProject> {
           // if the selected due date on the calendar is not chosen, then the
           // user will NOT be able to create a group
 
+          context.read<Project>().name = idController.text;
+          context.read<Project>().joinCode = passwordController.text;
+          context.read<Project>().members.add(context.read<Usser>());
+          context.read<Project>().dueDate = selectedDueDate;
+
+          /*
           Project project = Project(idController.text, passwordController.text, [],
               selectedDueDate);
+           */
 
-          project.generateUuid();
+          await context.read<Project>().generateUuid();
 
+          print(context.read<Project>().name);
+          print(context.read<Project>().joinCode);
+          print(context.read<Project>().members);
+          print(context.read<Project>().dueDate);
+          print(context.read<Project>().projectUuid);
 
+          await context.read<Project>().uploadProjectDatabase();
 
 
       }
       else if (joinMode) {
         // trying to join a group
 
+        context.read<Project>().name = idController.text;
+        context.read<Project>().joinCode = passwordController.text;
+
+        /*
         Project project = Project(idController.text, passwordController.text, []);
+         */
 
 
       }

@@ -85,7 +85,8 @@ CREATE TABLE PROJECT (
     deadline DATE NOT NULL ,
     notification_preference notification_enum NOT NULL ,
     google_drive_link VARCHAR(200),
-    discord_link VARCHAR(200)
+    discord_link VARCHAR(200),
+    uuid VARCHAR(50) NOT NULL
 );
 
 
