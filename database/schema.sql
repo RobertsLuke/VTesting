@@ -1,5 +1,3 @@
--- THIS FILE IS EXECUTED LOCALLY FOR PG ADMIN
-
 -- DOUBLE CHECK THE DIFFERENT OPTIONS
 CREATE TYPE notification_enum AS ENUM ('Daily', 'Weekly');
 
@@ -22,8 +20,33 @@ CREATE TYPE theme_enum AS ENUM ('Light', 'Dark');
 
 
 -- DONE
+CREATE TABLE PROJECT (
+    project_uid SERIAL PRIMARY KEY,
+    join_code VARCHAR(10) NOT NULL,
+    proj_name VARCHAR(20) NOT NULL,
+    deadline DATE NOT NULL ,
+    notification_preference notification_enum NOT NULL ,
+    google_drive_link VARCHAR(200),
+    discord_link VARCHAR(200),
+    uuid VARCHAR(50) NOT NULL
+);
+
+
+-- DONE
+CREATE TABLE CONTRIBUTION_REPORT (
+    contribution_id SERIAL PRIMARY KEY,
+    project_uid INT NOT NULL REFERENCES PROJECT(project_uid),
+    members_involved VARCHAR(1000),
+    task_name VARCHAR(50),
+    task_weighting INT NOT NULL,
+    task_start DATE NOT NULL ,
+    task_date DATE NOT NULL
+);
+
+-- DONE
 CREATE TABLE MEETING (
     meeting_id SERIAL PRIMARY KEY,
+    project_uid INT NOT NULL REFERENCES PROJECT(project_uid),
     meeting_type meeting_enum NOT NULL ,
     start_date DATE NOT NULL ,
     end_date DATE NOT NULL ,
@@ -36,19 +59,9 @@ CREATE TABLE MEETING (
 
 
 -- DONE
-CREATE TABLE CONTRIBUTION_REPORT (
-    contribution_id SERIAL PRIMARY KEY,
-    members_involved VARCHAR(1000),
-    task_name VARCHAR(50),
-    task_weighting INT NOT NULL,
-    task_start DATE NOT NULL ,
-    task_date DATE NOT NULL
-);
-
-
--- DONE
 CREATE TABLE PROJECT_MEMBERS (
     members_id SERIAL PRIMARY KEY,
+    project_uid INT NOT NULL REFERENCES PROJECT(project_uid),
     is_owner BOOL NOT NULL ,
     member_role role_enum NOT NULL ,
     join_date DATE NOT NULL
@@ -58,6 +71,7 @@ CREATE TABLE PROJECT_MEMBERS (
 -- DONE
 CREATE TABLE TASK (
     task_id SERIAL PRIMARY KEY,
+    project_uid INT NOT NULL REFERENCES PROJECT(project_uid),
     task_name VARCHAR(50) NOT NULL,
     parent VARCHAR(50),
     weighting INT,
@@ -68,21 +82,6 @@ CREATE TABLE TASK (
     description VARCHAR(300),
     members VARCHAR(1000),
     notification_frequency notification_enum NOT NULL
-);
-
-
--- DONE
-CREATE TABLE PROJECT (
-    project_uid SERIAL PRIMARY KEY,
-    members_id INT NOT NULL REFERENCES PROJECT_MEMBERS(members_id),
-    task_id INT NOT NULL REFERENCES TASK(task_id),
-    join_code VARCHAR(10) NOT NULL,
-    proj_name VARCHAR(20) NOT NULL,
-    deadline DATE NOT NULL ,
-    notification_preference notification_enum NOT NULL ,
-    google_drive_link VARCHAR(200),
-    discord_link VARCHAR(200),
-    uuid VARCHAR(50) NOT NULL
 );
 
 
