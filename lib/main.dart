@@ -17,7 +17,7 @@ void main() {
       create: (context) => ThemeProvider(), // Provide the theme provider
       child: const MyApp(),
     ),
-  ) 
+  ); 
   }
 
 
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       theme: themeProvider.currentTheme,  // Set theme based on provider
-      initialRoute: "/home",
+      initialRoute: "/login",
       routes: {
         "/home": (context) => const Home(),
         "/navigation": (context) => const NavigationPage(),
