@@ -6,13 +6,18 @@ final username = TextEditingController();
 final password = TextEditingController();
 final email = TextEditingController();
 
+String? usernameErrorText;
+String? passwordErrorText;
+String? emailErrorText;
+
 // creating a function that returns a Input Box
-TextFormField createInputField(TextEditingController controller, String hintMessage, int maxInputLength, Function validatorFunction) {
+TextFormField createInputField(TextEditingController controller, String hintMessage, int maxInputLength, Function validatorFunction, String? _errorText) {
   return TextFormField(
     controller: controller,
     decoration: InputDecoration(
       hintText: hintMessage,
     ),
+    forceErrorText: _errorText,
     maxLength: maxInputLength,
     validator: (value) {
       return validatorFunction(value);
@@ -30,7 +35,7 @@ Container usernameContainer() {
         Text("Username", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
         SizedBox(
             width: 200,
-            child: createInputField(username, "Enter your username", 10, usernameInputValidator)
+            child: createInputField(username, "Enter your username", 30, usernameInputValidator, usernameErrorText)
         ),
 
       ],
@@ -47,7 +52,7 @@ Container emailContainer() {
         Text("Email", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
         SizedBox(
             width: 200,
-            child: createInputField(email, "Enter your email", 10, emailInputValidator)
+            child: createInputField(email, "Enter your email", 30, emailInputValidator, emailErrorText)
         ),
       ],
     ),
@@ -62,7 +67,7 @@ Container passwordContainer() {
         const SizedBox(height: 50),
         SizedBox(
             width: 200,
-            child: createInputField(password, "Enter Password", 10, passwordInputValidator)
+            child: createInputField(password, "Enter Password", 30, passwordInputValidator, passwordErrorText)
         ),
       ],
     ),
