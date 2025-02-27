@@ -12,6 +12,11 @@ String? passwordInputValidator(String value) {
   if (value.isEmpty) {
     return "Can not leave this field empty";
   }
+  else if (value.length < 8) {
+    return "less than 8 characters";
+  }
+  // need to add condition using regex to check for digits and special characters
+  // refer to iteration 1 for more detail
   return null;
 }
 
