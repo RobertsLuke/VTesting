@@ -132,10 +132,19 @@ class _JoinProjectState extends State<JoinProject> {
         context.read<Project>().projectUuid = idController.text;
         context.read<Project>().joinCode = passwordController.text;
 
-        context.read<Project>().joinProject(uidErrorText, joinCodeErrorText);
+        String userId = context.read<Usser>().usserID;
+
+        List<String?> errorMessages = await context.read<Project>().joinProject(uidErrorText, joinCodeErrorText, userId);
+
+        uidErrorText = errorMessages[0];
+        joinCodeErrorText = errorMessages[1];
+
+        print("UidErrorText: $uidErrorText. JoinCodeErrorText: $joinCodeErrorText");
 
         // in case there is an error
         setState(() {});
+
+        print("UidErrorText: $uidErrorText. JoinCodeErrorText: $joinCodeErrorText");
 
         if (joinCodeErrorText == null && uidErrorText == null) {
           Navigator.pushNamed(context, "/home");
@@ -187,7 +196,7 @@ class _JoinProjectState extends State<JoinProject> {
                     const SizedBox(height: 100),
                     Align(alignment: Alignment.centerLeft,child: Text((joinMode)?"Group ID": "Group Name", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),),
                     // change the max input length to match specification in user requirements
-                    createInputField(idController, (joinMode)?"Enter Group ID": "Enter Project Name", 10, idInputValidator, uidErrorText),
+                    createInputField(idController, (joinMode)?"Enter Group ID": "Enter Project Name", 50, idInputValidator, uidErrorText),
                     const SizedBox(height: 100),
                     Align(alignment: Alignment.centerLeft, child: Text("Group Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300]))),
                     createInputField(passwordController, "Enter Group Password", 10, passwordInputValidator, joinCodeErrorText),

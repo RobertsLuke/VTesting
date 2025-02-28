@@ -198,32 +198,101 @@ class Project extends ChangeNotifier {
     }
   }
 
+  Future<int?> getProjectId() async {
+    final Uri request = Uri.parse("http://127.0.0.1:5000/"
+        "get/project/id?uuid=$projectUuid");
 
-  Future<void> joinProject(String? uidErrorText, String? joinCodeErrorText) async {
+    try {
+      // using http to asynchronously get the information from flask
+      final response = await http.get(request);
+
+      if (response.statusCode == 200) {
+        // if the response was successful you will get the expected information
+        print(response.body);
+        return int.parse(response.body);
+      }
+      else {
+        print(response.statusCode);
+      }
+    }
+    catch (e) {
+      // catching any exceptions
+      print(e);
+    }
+
+    return null;
+
+  }
+
+  Future<bool?> isUserInProject(String userId) async {
+
+
+    int? projectId = await getProjectId();
+
+    final Uri request = Uri.parse("http://127.0.0.1:5000/"
+        "user/in/project?user_id=$userId&project_id=$projectId");
+
+    try {
+      // using http to asynchronously get the information from flask
+      final response = await http.get(request);
+
+      if (response.statusCode == 200) {
+        // if the response was successful you will get the expected information
+        print(response.body);
+        if (int.parse(response.body) > 0) { return true;}
+        else { return false;}
+
+      }
+      else {
+        print(response.statusCode);
+      }
+    }
+    catch (e) {
+      // catching any exceptions
+      print(e);
+    }
+
+    return null;
+  }
+
+
+  Future<List<String?>> joinProject(String? uidErrorText, String? joinCodeErrorText, String userId) async {
     // this function will be called when a user tries to join a project
 
     // first have to check if that uuid exists
     bool? exists = await uuidExists(projectUuid!);
 
-    // have to check that the user is not trying to join a project they are already
-    // a part of
 
     if (exists == true) {
-      // the project exists so now you can compare to see if the join code is
-      // correct
+      // have to check that the user is not trying to join a project they are already
+      // a part of
+      bool? userExists = await isUserInProject(userId);
 
-      bool? correctPassword = await isPasswordCorrect();
+      print("DOES THE USER EXIST INSIDE THE PROJECT: $userExists");
 
-      if (correctPassword == true) {
-        // went successful, the uuid exists and the password matches
-        // this means that you can now load other attributes from the project
-        // in the database
+      // will prevent the rest of the function from executing
+      if (userExists == true) {
 
-        loadAttributes();
+        print("inside user exists ");
+        uidErrorText = "You are already part of that project";
       }
       else {
-        // unsuccessful attempt to join project
-        joinCodeErrorText = "Incorrect join code";
+        // the project exists so now you can compare to see if the join code is
+        // correct
+
+        bool? correctPassword = await isPasswordCorrect();
+
+        if (correctPassword == true) {
+          // went successful, the uuid exists and the password matches
+          // this means that you can now load other attributes from the project
+          // in the database
+
+          loadAttributes();
+        }
+        else {
+          // unsuccessful attempt to join project
+          joinCodeErrorText = "Incorrect join code";
+        }
       }
     }
     else if (exists == false) {
@@ -232,8 +301,12 @@ class Project extends ChangeNotifier {
     }
     else {
       // error trying to retrieve information
-
+      uidErrorText = "Unable to check if project exists with that uuid";
     }
+
+    List<String?> errors = [uidErrorText, joinCodeErrorText];
+
+    return errors;
   }
 
   Future<void> uploadProjectDatabase(String userId) async {
