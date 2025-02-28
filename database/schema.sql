@@ -8,7 +8,7 @@ CREATE TYPE role_enum AS ENUM ('Editor', 'Viewer');
 CREATE TYPE tags_enum AS ENUM ('Science', 'Research', 'Maths', 'Group', 'Individual', 'Hard', 'Normal', 'Easy');
 
 -- DOUBLE CHECK THE OPTIONS
--- CREATE TYPE notification_enum AS ENUM ('Never', 'Daily', 'Weekly', 'Monthly');
+--CREATE TYPE notification_enum AS ENUM ('Never', 'Daily', 'Weekly', 'Monthly');
 
 -- DOUBLE CHECK THE OPTIONS
 CREATE TYPE meeting_enum AS ENUM ('In-person', 'Online');
@@ -17,6 +17,18 @@ CREATE TYPE meeting_enum AS ENUM ('In-person', 'Online');
 CREATE TYPE theme_enum AS ENUM ('Light', 'Dark');
 
 -- NOT DOING ANY OF THE FOREIGN KEYS YET FOR ANY TABLE
+
+-- DONE
+CREATE TABLE ONLINE_USER (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL ,
+    email VARCHAR(150) NOT NULL ,
+    user_password VARCHAR(100) NOT NULL ,
+    theme theme_enum NOT NULL ,
+    profile_picture BYTEA,
+    currency_total INT NOT NULL ,
+    customize_settings VARCHAR(1000)
+);
 
 
 -- DONE
@@ -62,6 +74,7 @@ CREATE TABLE MEETING (
 CREATE TABLE PROJECT_MEMBERS (
     members_id SERIAL PRIMARY KEY,
     project_uid INT NOT NULL REFERENCES PROJECT(project_uid),
+    user_id INT NOT NULL REFERENCES ONLINE_USER(user_id),
     is_owner BOOL NOT NULL ,
     member_role role_enum NOT NULL ,
     join_date DATE NOT NULL
@@ -85,19 +98,14 @@ CREATE TABLE TASK (
 );
 
 
--- DONE
-CREATE TABLE ONLINE_USER (
-    user_id SERIAL PRIMARY KEY,
-    username VARCHAR(100) NOT NULL ,
-    email VARCHAR(150) NOT NULL ,
-    user_password VARCHAR(100) NOT NULL ,
-    theme theme_enum NOT NULL ,
-    profile_picture BYTEA,
-    currency_total INT NOT NULL ,
-    customize_settings VARCHAR(1000)
+-- INTERSECTIONS BELOW
+
+CREATE TABLE MEMBERS_MEETING (
+    meeting_id INT NOT NULL REFERENCES MEETING(meeting_id),
+    members_id INT NOT NULL REFERENCES PROJECT_MEMBERS(members_id),
+    PRIMARY KEY (meeting_id, members_id)
 );
 
--- INTERSECTIONS BELOW
 
 CREATE TABLE USER_PROJECT (
     user_id INT NOT NULL REFERENCES ONLINE_USER(user_id),

@@ -3,17 +3,28 @@ import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+
+enum NotiPref {
+  daily,
+  weekly
+}
 
 class Project extends ChangeNotifier {
+  // the projectId is the PK value in the db and the projectUuid is the
+  // unique identifier for the project
+  int? projectId;
+  NotiPref? notificationPreference;
   String? projectUuid;
   String name;
   String joinCode;
-  List<Usser> members;
   DateTime? dueDate;
+  String? google_drive_link;
+  String? discord_link;
 
   // if you are trying to create a group, then the dueDate will be passed as an
   // argument
-  Project(this.name, this.joinCode, this.members, [this.dueDate]);
+  Project(this.name, this.joinCode, [this.dueDate]);
 
   Future<bool?> uuidExists(String tempUuid) async {
     // method to ensure that uuid isn't already associated to a project otherwise
@@ -114,11 +125,125 @@ class Project extends ChangeNotifier {
 
    */
 
-  Future<void> uploadProjectDatabase() async {
+  Future<bool?> isPasswordCorrect() async {
+    // function will check if the join code of a project matches the one in the
+    // database
+
+    final Uri request = Uri.parse("http://127.0.0.1:5000/project/"
+        "password/validation?uuid=$projectUuid&password=$joinCode");
+
+
+    try {
+      // using http to asynchronously get the information from flask
+      final response = await http.get(request);
+
+      if (response.statusCode == 200) {
+        // if the response was successful you will get the expected information
+        print(response.body);
+        if (int.parse(response.body) == 1) { return true; }
+        else { return false; }
+      }
+      else {
+        print(response.statusCode);
+      }
+    }
+    catch (e) {
+      // catching any exceptions
+      print(e);
+    }
+
+    // return null if there is an error
+    return null;
+
+  }
+
+  Future<void> loadAttributes() async {
+    // when successfully joining a project you can load the other attributes of
+    // the project from the database
+
+    // function will check if the join code of a project matches the one in the
+    // database
+
+    final Uri request = Uri.parse("http://127.0.0.1:5000/get/"
+        "project/attributes?uuid=$projectUuid&password=$joinCode");
+
+    try {
+      // using http to asynchronously get the information from flask
+      final response = await http.get(request);
+
+      if (response.statusCode == 200) {
+        // if the response was successful you will get the expected information
+        print(response.body);
+
+        List<String> attributes = jsonDecode(response.body);
+        projectId = int.parse(attributes[0]);
+        attributes[1] == "Weekly"? notificationPreference = NotiPref.weekly :
+        notificationPreference = NotiPref.daily;
+        name = attributes[2];
+        dueDate = DateTime.parse(attributes[3]);
+        attributes[4] == "Null"? google_drive_link = null: google_drive_link = attributes[4];
+        attributes[5] == "Null"? discord_link = null: discord_link = attributes[5];
+
+        // because the home screen ui will use the name of the project as the
+        // title
+        notifyListeners();
+      }
+      else {
+        print(response.statusCode);
+      }
+    }
+    catch (e) {
+      // catching any exceptions
+      print(e);
+    }
+  }
+
+
+  Future<void> joinProject(String? uidErrorText, String? joinCodeErrorText) async {
+    // this function will be called when a user tries to join a project
+
+    // first have to check if that uuid exists
+    bool? exists = await uuidExists(projectUuid!);
+
+    // have to check that the user is not trying to join a project they are already
+    // a part of
+
+    if (exists == true) {
+      // the project exists so now you can compare to see if the join code is
+      // correct
+
+      bool? correctPassword = await isPasswordCorrect();
+
+      if (correctPassword == true) {
+        // went successful, the uuid exists and the password matches
+        // this means that you can now load other attributes from the project
+        // in the database
+
+        loadAttributes();
+      }
+      else {
+        // unsuccessful attempt to join project
+        joinCodeErrorText = "Incorrect join code";
+      }
+    }
+    else if (exists == false) {
+      // the project does not exist
+      uidErrorText = "Incorrect id";
+    }
+    else {
+      // error trying to retrieve information
+
+    }
+  }
+
+  Future<void> uploadProjectDatabase(String userId) async {
     // this function will be responsible for uploading the project to the database
+
+
+
     final Uri request = Uri.parse(
-        "http://127.0.0.1:5000/get/user/id?uuid=$projectUuid"
-            "&name=$name&join=$joinCode&due=$dueDate");
+        "http://127.0.0.1:5000/upload/project?uuid=$projectUuid"
+            "&name=$name&join=$joinCode&due=$dueDate&user_id=$userId");
 
     try {
       // using http to asynchronously get the information from flask

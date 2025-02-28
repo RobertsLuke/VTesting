@@ -24,7 +24,7 @@ void main() {
         providers: [
           // creating blank initial providers
           ChangeNotifierProvider(create: (context) => Usser("","","","Light",null,0,{},)),
-          ChangeNotifierProvider(create: (context) => Project("","",[],null))
+          ChangeNotifierProvider(create: (context) => Project("","",null))
         ],
         child: MaterialApp(
           // Set the app's theme
