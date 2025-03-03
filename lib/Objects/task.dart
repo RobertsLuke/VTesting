@@ -3,18 +3,18 @@ enum NotificationFrequency { daily, weekly, monthly, none }
 class Task with ChangeNotifier {
 
   String title;
-  String? parentTask;
-  double percentageWeighting;
-  List<String> listOfTags;
+  String? parentTask;//set
+  double percentageWeighting;//validate
+  List<String> listOfTags;//set
   int priority;
-  DateTime startDate;
-  DateTime endDate;
-  Map<String, String> members;
-  bool notificationPreference;
+  DateTime startDate;//set
+  DateTime? endDate;
+  Map<String, String> members;//set
+  bool notificationPreference;//set
   NotificationFrequency notificationFrequency;
   String description;
-  String directoryPath;
-  List<String> comments;
+  String directoryPath;//set
+  List<String> comments;//set
 
   Task({
     required this.title,
@@ -23,17 +23,17 @@ class Task with ChangeNotifier {
     required this.listOfTags, 
     required this.priority,
     DateTime? startDate,
-    required this.endDate,
+    DateTime? endDate,
     required this.description,
     required this.members,
     this.notificationPreference = true,
     this.notificationFrequency = NotificationFrequency.daily,
     required this.directoryPath,
-   List<String>? comments,
+  List<String>? comments,
   })  : startDate = startDate ?? DateTime.now(),
         comments = comments ?? [] {
-    // Validating the end date during task creation
-    if (endDate.isBefore(startDate!)) {
+    // Check if endDate is provided and perform validation
+    if (endDate != null && endDate!.isBefore(startDate!)) {
       throw ArgumentError("End date must be after start date.");
     }
     if (description.length > 400) {
@@ -41,6 +41,7 @@ class Task with ChangeNotifier {
     }
   }
 
+  
   // Method to assign a member
   void assignMember(String username, String role) {
     members[username] = role;
@@ -74,9 +75,11 @@ class Task with ChangeNotifier {
     return members.containsKey(username);
   }
 
-  // Method to check if the deadline is valid
   bool validDeadLine() {
-    return endDate.isAfter(startDate);
+    if (endDate != null) {
+      return endDate!.isAfter(startDate);
+    }
+    return true; // If endDate is null, return true as no end date is set yet
   }
 
   // Set the notification frequency

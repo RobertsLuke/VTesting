@@ -6,6 +6,7 @@ import './login/login.dart';
 import './join/join.dart';
 import './home/home.dart';
 import 'providers/theme_provider.dart';
+import 'providers/tasks_provider.dart';
 import 'usser/usserProfilePage.dart';
 import 'package:sevenc_iteration_two/testingNavigation.dart';
 
@@ -13,8 +14,11 @@ import 'package:sevenc_iteration_two/testingNavigation.dart';
 
 void main() {  
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ThemeProvider(), // Provide the theme provider
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()), 
+        ChangeNotifierProvider(create: (context) => TaskProvider()),  
+      ],
       child: const MyApp(),
     ),
   ); 
