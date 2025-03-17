@@ -5,16 +5,16 @@ class Task with ChangeNotifier {
   String title;
   String? parentTask;//set
   double percentageWeighting;//validate
-  List<String> listOfTags;//set
+  List<String>? listOfTags;//set
   int priority;
   DateTime startDate;//set
   DateTime? endDate;
-  Map<String, String> members;//set
+  Map<String, String>? members;//set
   bool notificationPreference;//set
   NotificationFrequency notificationFrequency;
   String description;
   String directoryPath;//set
-  List<String> comments;//set
+  List<String>? comments;//set
 
   Task({
     required this.title,
@@ -44,35 +44,35 @@ class Task with ChangeNotifier {
   
   // Method to assign a member
   void assignMember(String username, String role) {
-    members[username] = role;
+    members![username] = role;
     notifyListeners();
   }
 
   // Method to remove a member
   void removeMember(String username) {
-    members.remove(username);
+    members!.remove(username);
     notifyListeners();
   }
 
   // Get the list of members
   List<String> getMembers() {
-    return members.keys.toList();
+    return members!.keys.toList();
   }
 
   // Remove a tag from the list
   void removeTag(String tag) {
-    listOfTags.remove(tag);
+    listOfTags!.remove(tag);
     notifyListeners();
   }
 
   // Get the list of tags
-  List<String> getTags() {
+  List<String>? getTags() {
     return listOfTags;
   }
 
   // Method to check if the user can edit the task
   bool canEdit(String username) {
-    return members.containsKey(username);
+    return members!.containsKey(username);
   }
 
   bool validDeadLine() {
@@ -94,11 +94,11 @@ class Task with ChangeNotifier {
       print("New tag cannot be empty.");
       return;
     }
-    int index = listOfTags.indexOf(oldTag);
+    int index = listOfTags!.indexOf(oldTag);
     if (index != -1) {
-      listOfTags[index] = newTag;
+      listOfTags![index] = newTag;
     } else {
-      listOfTags.add(newTag);
+      listOfTags!.add(newTag);
     }
     notifyListeners();
   }

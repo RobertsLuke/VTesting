@@ -76,7 +76,7 @@ class _HomeState extends State<Home> {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController percentageWeightingController =
       TextEditingController();
-  final TextEditingController priorityController = TextEditingController();
+  TextEditingController priorityController = TextEditingController();
   final TextEditingController subtaskController = TextEditingController();
   //Form Key
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -92,10 +92,6 @@ class _HomeState extends State<Home> {
   FocusNode tagFocusNode = FocusNode();
   FocusNode percentageFocusNode = FocusNode();
   FocusNode priorityFocusNode = FocusNode();
-  //Task Data
-  //String taskTitle = '';
-  //String taskDescription = '';
-  //double percentageWeighting = 0.0;
   int priorityLevel = 1;
 
   @override
@@ -169,7 +165,7 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
             return ListTile(
               title: Text(task.title),
               subtitle: Text(
-                  "Priority: ${task.priority} | Due: ${task.endDate?.toLocal()}"),
+                  "Priority: ${task.priority} | Due: ${task.endDate}"),
             );
           },
         );
@@ -192,42 +188,64 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
 
   void clearForm() {
     setState(() {
+      // Clear all controllers
       titleController.clear();
       descriptionController.clear();
+      print("Title Controller: ${titleController.text}");
+      print("Description Controller: ${descriptionController.text}");
       subtaskController.clear();
       tagController.clear();
       percentageWeightingController.clear();
+      priorityController.clear();
+      endDateController.clear();
+
+      // Clear lists
       subtasks.clear();
       tags.clear();
-      endDate = null;        
-      // Reset any form validation state
-      formKey.currentState?.reset();
+
+      // Reset other state variables
+      endDate = null;
+      priorityLevel = 1; // Reset priority level
+      formKey.currentState?.reset(); // Reset form validation state
     });
   }
 
   void submitTask(DateTime? selectedEndDate) {
     if (formKey.currentState!.validate()) {
       // Form is valid, proceed with submission
-      if (selectedEndDate == null) {
-        print("Error: endDate is NULL!");
-        return;
-      }
-
+      print("task title: ${titleController.text}");
+      print("task description: ${descriptionController.text}");
+      print("task priority: ${priorityController.text}");
+      print("task end date: ${endDateController.text}");
+      print("task percentage weighting: ${percentageWeightingController.text}");
+      print("task tags: ${tags}");
+      print("subtasks: ${subtaskController.text}");
+      
+      print("in here now!");
       Task newTask = Task(
       title: titleController.text,
       percentageWeighting: double.tryParse(percentageWeightingController.text) ?? 0.0,
       listOfTags: tags,
-      priority: 1,
-      endDate: selectedEndDate, // Use the parameter
+      priority: int.tryParse(priorityController.text) ?? 1 ,
+      startDate: DateTime(2024,9,7,12,00),
+      endDate: DateTime.tryParse(endDateController.text) ??  DateTime.now(), 
       description: descriptionController.text,
       members: const {},
       notificationPreference: notificationPreference,
       notificationFrequency: notificationFrequency,
       directoryPath: "path/to/directory",
     );
+    print("after the task statement");
       Provider.of<TaskProvider>(context, listen: false).addTask(newTask);
-      print("Task created with endDate: ${newTask.endDate}");
+       print("task title: ${newTask.title}");
+      print("task description: ${newTask.description}");
+      print("task priority: ${newTask.priority}");
+      print("task end date: ${newTask.endDate}");
+      print("task percentage weighting: ${newTask.percentageWeighting}");
+      print("task tags: ${newTask.getTags()}");
+      print("subtasks: ${newTask.getMembers()}");
       clearForm();
+  
     } else {
       print("form is not valid");
     }
@@ -338,8 +356,8 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
                   ),
                   const SizedBox(height: 16),
                   Text("Priority Level", style: theme.textTheme.titleMedium),
-                  DropdownButtonFormField<int>(
-                    items: [1, 2, 3, 4, 5]
+                  DropdownButtonFormField(
+                    items: ["1", "2", "3", "4","5"]
                         .map((level) => DropdownMenuItem(
                               value: level,
                               child: Text("Priority $level",
@@ -348,7 +366,9 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
                             ))
                         .toList(),
                     onChanged: (value) {
-                      priorityLevel = value ?? 1;
+                      print("value is $value");
+                      priorityController.text = value ?? "1";
+                      print("priority controller is ${priorityController.text}");
                     },
                     decoration: InputDecoration(
                       hintText: "Select priority",
@@ -363,7 +383,7 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
                   DatePickerField(
                     controller: endDateController,
                     onDateSelected: (selectedDate) {
-                      endDate = selectedDate;
+                      //endDate = selectedDate;
                     },
                   ),
                 ],
