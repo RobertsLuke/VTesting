@@ -7,7 +7,9 @@ class TaskProvider extends ChangeNotifier {
   List<Task> get tasks => _tasks;
 
   void addTask(Task task) {
+    print("Adding task to provider: ${task.title} with tags: ${task.listOfTags}");
     _tasks.add(task);
+     print("Task added to provider: ${task.title} with tags: ${task.listOfTags}");
     notifyListeners();
   }
 

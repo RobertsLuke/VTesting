@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'settings_page.dart';
 import '../providers/tasks_provider.dart';
 import '../Objects/task.dart';
+import 'package:intl/intl.dart';
+
 
 class DatePickerField extends StatefulWidget {
   final TextEditingController controller;
@@ -48,12 +50,9 @@ class _DatePickerFieldState extends State<DatePickerField> {
     );
 
     if (selectedDate != null) {
-      // Pass the selected date to the parent widget using the callback
-      widget.onDateSelected(selectedDate);
-      // Update the controller's text with the selected date without triggering full rebuild
-      widget.controller.text =
-          "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}";
-    }
+       widget.onDateSelected(selectedDate);
+       widget.controller.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+      }
   }
 }
 
@@ -67,7 +66,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   // Application
   String screenTitle = "PROJECT_NAME";
-  DateTime? endDate;
+  //DateTime? endDate;
   List<Task> tasks = []; // List to store created tasks
   //Controllers
   final TextEditingController endDateController = TextEditingController();
@@ -76,23 +75,20 @@ class _HomeState extends State<Home> {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController percentageWeightingController =
       TextEditingController();
-  TextEditingController priorityController = TextEditingController();
-  final TextEditingController subtaskController = TextEditingController();
+  final TextEditingController priorityController = TextEditingController();
   //Form Key
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   //Tags & Subtasks
   List<String> tags = [];
-  List<String> subtasks = [];
   NotificationFrequency notificationFrequency = NotificationFrequency.daily;
   bool notificationPreference = true;
   // Focus Nodes
   FocusNode titleFocusNode = FocusNode();
   FocusNode descriptionFocusNode = FocusNode();
-  FocusNode subtaskFocusNode = FocusNode();
   FocusNode tagFocusNode = FocusNode();
   FocusNode percentageFocusNode = FocusNode();
   FocusNode priorityFocusNode = FocusNode();
-  int priorityLevel = 1;
+ 
 
   @override
   void initState() {
@@ -107,7 +103,6 @@ class _HomeState extends State<Home> {
     titleFocusNode.dispose();
     descriptionFocusNode.removeListener( () => _validateField(descriptionFocusNode,formKey));
     descriptionFocusNode.dispose();
-    subtaskFocusNode.dispose();
     tagFocusNode.dispose();
     percentageFocusNode.dispose();
     priorityFocusNode.dispose();
@@ -117,8 +112,7 @@ class _HomeState extends State<Home> {
     descriptionController.dispose();
     percentageWeightingController.dispose();
     priorityController.dispose();
-    subtaskController.dispose();
-
+   
     super.dispose();
   }
 
@@ -155,62 +149,112 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
     );
   }
 
-  Widget createTaskBody() {
-    return Consumer<TaskProvider>(
-      builder: (context, taskProvider, child) {
-        return ListView.builder(
-          itemCount: taskProvider.tasks.length,
-          itemBuilder: (context, index) {
-            final task = taskProvider.tasks[index];
-            return ListTile(
-              title: Text(task.title),
-              subtitle: Text(
-                  "Priority: ${task.priority} | Due: ${task.endDate}"),
-            );
-          },
-        );
-      },
-    );
-  }
+ Widget createTaskBody() {
+  return Consumer<TaskProvider>(
+    builder: (context, taskProvider, child) {
+      return ListView.builder(
+        itemCount: taskProvider.tasks.length,
+        itemBuilder: (context, index) {
+          final task = taskProvider.tasks[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: ExpansionTile(
+              title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text("Priority: ${task.priority} | Due: ${DateFormat('yyyy-MM-dd').format(task.endDate)}"),
+              children: [
+                ListTile(
+                  title: const Text("Parent Project"),
+                  subtitle: Text(task.parentProject ?? "N/A"),
+                ),
+                ListTile(
+                  title: const Text("Percentage Weighting"),
+                  subtitle: Text("${task.percentageWeighting}%"),
+                ),
+                ListTile(
+                  title: const Text("Tags"),
+                  subtitle: task.listOfTags != null && task.listOfTags!.isNotEmpty
+                      ? Wrap(
+                          spacing: 8,
+                          children: task.listOfTags!.map((tag) => Chip(label: Text(tag))).toList(),
+                  )
+                    : const Text("None"),
+                ),
+                ListTile(
+                  title: const Text("Start Date"),
+                  subtitle: Text(DateFormat('yyyy-MM-dd').format(task.startDate)),
+                ),
+                ListTile(
+                  title: const Text("Members"),
+                  subtitle: Text(task.members != null && task.members!.isNotEmpty
+                      ? task.members!.entries.map((e) => "${e.key}: ${e.value}").join(", ")
+                      : "None"),
+                ),
+                ListTile(
+                  title: const Text("Notification Preference"),
+                  subtitle: Text(task.notificationPreference ? "Enabled" : "Disabled"),
+                ),
+                ListTile(
+                  title: const Text("Notification Frequency"),
+                  subtitle: Text(task.notificationFrequency.toString().split('.').last),
+                ),
+                ListTile(
+                  title: const Text("Description"),
+                  subtitle: Text(task.description),
+                ),
+                ListTile(
+                  title: const Text("Directory Path"),
+                  subtitle: Text(task.directoryPath),
+                ),
+                ListTile(
+                  title: const Text("Comments"),
+                  subtitle: Text(task.comments?.join("\n") ?? "No comments"),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
+}
 
-  void addSubtask() {
-    if (subtaskController.text.isNotEmpty) {
-      setState(() {
-        subtasks.add(subtaskController.text);
-      });
-      subtaskController.clear();
-    }
-  }
+
+ 
 
   void addTag() {
     formKey.currentState!.validate();
   }
 
   void clearForm() {
+    
     setState(() {
       // Clear all controllers
+      print("Before clearing: ${titleController.text}");
       titleController.clear();
+      print("After clearing: ${titleController.text}");
       descriptionController.clear();
-      print("Title Controller: ${titleController.text}");
-      print("Description Controller: ${descriptionController.text}");
-      subtaskController.clear();
+      print("After clearing description: ${descriptionController.text}");
       tagController.clear();
       percentageWeightingController.clear();
+      print("After clearing percentageWeightingController: ${percentageWeightingController.text}");
       priorityController.clear();
+      print("After clearing priorityController: ${priorityController.text}");
       endDateController.clear();
-
-      // Clear lists
-      subtasks.clear();
-      tags.clear();
-
-      // Reset other state variables
-      endDate = null;
-      priorityLevel = 1; // Reset priority level
-      formKey.currentState?.reset(); // Reset form validation state
+      print("After clearing endDateController: ${endDateController.text}");
+     //-------------------------------
+      print("Clear Form Values");
+      print("task title: ${titleController.text}");
+      print("task description: ${descriptionController.text}");
+      print("task priority: ${priorityController.text}");
+      print("task end date: ${endDateController.text}");
+      print("task percentage weighting: ${percentageWeightingController.text}");
+      print("task tags: ${tags}"); 
+   
     });
   }
+  
 
-  void submitTask(DateTime? selectedEndDate) {
+  void submitTask() {
     if (formKey.currentState!.validate()) {
       // Form is valid, proceed with submission
       print("task title: ${titleController.text}");
@@ -218,8 +262,7 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
       print("task priority: ${priorityController.text}");
       print("task end date: ${endDateController.text}");
       print("task percentage weighting: ${percentageWeightingController.text}");
-      print("task tags: ${tags}");
-      print("subtasks: ${subtaskController.text}");
+      print("task tags: ${tags}");    
       
       print("in here now!");
       Task newTask = Task(
@@ -228,22 +271,23 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
       listOfTags: tags,
       priority: int.tryParse(priorityController.text) ?? 1 ,
       startDate: DateTime(2024,9,7,12,00),
-      endDate: DateTime.tryParse(endDateController.text) ??  DateTime.now(), 
+      endDate: DateTime.parse(endDateController.text), 
       description: descriptionController.text,
       members: const {},
       notificationPreference: notificationPreference,
       notificationFrequency: notificationFrequency,
       directoryPath: "path/to/directory",
     );
-    print("after the task statement");
+    
       Provider.of<TaskProvider>(context, listen: false).addTask(newTask);
-       print("task title: ${newTask.title}");
-      print("task description: ${newTask.description}");
-      print("task priority: ${newTask.priority}");
-      print("task end date: ${newTask.endDate}");
-      print("task percentage weighting: ${newTask.percentageWeighting}");
-      print("task tags: ${newTask.getTags()}");
-      print("subtasks: ${newTask.getMembers()}");
+      
+      print("Task added to provider, checking stored tasks...");
+      Provider.of<TaskProvider>(context, listen: false).tasks.forEach((task) {
+      print("Task: ${task.title}, Tags: ${task.listOfTags}");
+    });
+          
+           
+      
       clearForm();
   
     } else {
@@ -288,48 +332,11 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
                         return "Title cannot exceed 50 characters"; // input exceeding limit 50 char
                       }
                       return null;
-                    },
-                    /*onChanged: (value) {
-                      taskTitle = value;
-                    },*/
+                    },                    
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(descriptionFocusNode);
                     },
-                  ),
-                  const SizedBox(height: 16),
-                  Text("Subtasks", style: theme.textTheme.titleMedium),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: subtaskController,
-                          decoration: InputDecoration(
-                            hintText: "Add a subtask",
-                            filled: true,
-                            fillColor: theme.colorScheme.surface,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          style: TextStyle(color: theme.colorScheme.onSurface),
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.add, color: theme.colorScheme.primary),
-                        onPressed: addSubtask,
-                      ),
-                    ],
-                  ),
-                  Wrap(
-                    children: subtasks
-                        .map((subtask) => Chip(
-                              label: Text(subtask,
-                                  style: TextStyle(
-                                      color: theme.colorScheme.onPrimary)),
-                              backgroundColor: theme.colorScheme.primary,
-                            ))
-                        .toList(),
-                  ),
+                  ),              
                   const SizedBox(height: 16),
                   Text("Description", style: theme.textTheme.titleMedium),
                   TextFormField(
@@ -346,12 +353,9 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
                     validator: (value) =>
-                        value == null || value.trim().isEmpty ? "Description cannot be empty" : null,
-                   /*onChanged: (value) {
-                      taskDescription = value;
-                    },*/
+                        value == null || value.trim().isEmpty ? "Description cannot be empty" : null,                  
                     onFieldSubmitted: (_) {
-                      FocusScope.of(context).requestFocus(priorityFocusNode);
+                    FocusScope.of(context).requestFocus(priorityFocusNode);
                     },
                   ),
                   const SizedBox(height: 16),
@@ -366,9 +370,7 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
                             ))
                         .toList(),
                     onChanged: (value) {
-                      print("value is $value");
-                      priorityController.text = value ?? "1";
-                      print("priority controller is ${priorityController.text}");
+                      priorityController.text = value ?? "1" ;                     
                     },
                     decoration: InputDecoration(
                       hintText: "Select priority",
@@ -382,8 +384,7 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
                   const SizedBox(height: 16),
                   DatePickerField(
                     controller: endDateController,
-                    onDateSelected: (selectedDate) {
-                      //endDate = selectedDate;
+                    onDateSelected: (selectedDate) {                    
                     },
                   ),
                 ],
@@ -396,13 +397,13 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Percentage Weighting",
+                  Text("Task's Weight",
                       style: theme.textTheme.titleMedium),
                   TextFormField(
                     controller: percentageWeightingController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      hintText: "Enter percentage",
+                      hintText: "Weighting Percentage (1-100)",
                       filled: true,
                       fillColor: theme.colorScheme.surface,
                       border: OutlineInputBorder(
@@ -410,13 +411,21 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
                       ),
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
-                    /*onChanged: (value) {
-                      percentageWeighting = double.tryParse(value) ?? 0.0;
-                    },*/
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return "Percentage cannot be empty";
+                      }
+                      final percentage = int.tryParse(value);
+                      if (percentage == null || percentage < 1 || percentage > 100) {
+                        return "Enter a value between 1 and 100";
+                      }
+                      return null;
+                    },
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(tagFocusNode);
                     },
                   ),
+
                   const SizedBox(height: 16),
                   Text("Tags", style: theme.textTheme.titleMedium),
                   Row(
@@ -489,7 +498,8 @@ void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
                       const SizedBox(width: 16),
                       ElevatedButton(
                         onPressed: () {
-                          submitTask(endDate);
+                          submitTask();
+                          tags =[];
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.secondary,

@@ -3,37 +3,36 @@ enum NotificationFrequency { daily, weekly, monthly, none }
 class Task with ChangeNotifier {
 
   String title;
-  String? parentTask;//set
+  String? parentProject;//set
   double percentageWeighting;//validate
-  List<String>? listOfTags;//set
+  List<String> listOfTags = [];//set
   int priority;
-  DateTime startDate;//set
-  DateTime? endDate;
-  Map<String, String>? members;//set
-  bool notificationPreference;//set
-  NotificationFrequency notificationFrequency;
+  DateTime startDate = DateTime.now();//set
+  DateTime endDate;
+  Map<String, String> members = {};//set
+  bool notificationPreference = true;//set
+  NotificationFrequency notificationFrequency = NotificationFrequency.daily;
   String description;
   String directoryPath;//set
   List<String>? comments;//set
 
   Task({
     required this.title,
-    this.parentTask,
+    this.parentProject,
     required this.percentageWeighting,
     required this.listOfTags, 
     required this.priority,
-    DateTime? startDate,
-    DateTime? endDate,
+    required this.startDate,
+    required this.endDate,
     required this.description,
     required this.members,
-    this.notificationPreference = true,
-    this.notificationFrequency = NotificationFrequency.daily,
+    required this.notificationPreference ,
+    required this.notificationFrequency ,
     required this.directoryPath,
   List<String>? comments,
-  })  : startDate = startDate ?? DateTime.now(),
-        comments = comments ?? [] {
+  })  :  comments = comments ?? [] {
     // Check if endDate is provided and perform validation
-    if (endDate != null && endDate!.isBefore(startDate!)) {
+    if ( endDate.isBefore(startDate!)) {
       throw ArgumentError("End date must be after start date.");
     }
     if (description.length > 400) {
@@ -68,20 +67,14 @@ class Task with ChangeNotifier {
   // Get the list of tags
   List<String>? getTags() {
     return listOfTags;
-  }
+    }
 
   // Method to check if the user can edit the task
   bool canEdit(String username) {
     return members!.containsKey(username);
   }
 
-  bool validDeadLine() {
-    if (endDate != null) {
-      return endDate!.isAfter(startDate);
-    }
-    return true; // If endDate is null, return true as no end date is set yet
-  }
-
+ 
   // Set the notification frequency
   void setNotificationFrequency(NotificationFrequency frequency) {
     notificationFrequency = frequency;
@@ -131,13 +124,7 @@ class Task with ChangeNotifier {
     }
     description = newDescription;
     notifyListeners();
-  }
-
-  // Method to update the task's parent task
-  void updateParentTask(String? newParentTask) {
-    parentTask = newParentTask;
-    notifyListeners();
-  }
+  }  
 
   // Method to update notification preferences
   void updateNotificationPreference(bool newPreference) {
