@@ -1,9 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
 import 'settings_page.dart';
+import '../providers/tasks_provider.dart';
+import '../Objects/task.dart';
+import 'package:intl/intl.dart';
 
 
+class DatePickerField extends StatefulWidget {
+  final TextEditingController controller;
+  final Function(DateTime) onDateSelected;
+
+  const DatePickerField({
+    Key? key,
+    required this.controller,
+    required this.onDateSelected,
+  }) : super(key: key);
+
+  @override
+  State<DatePickerField> createState() => _DatePickerFieldState();
+}
+
+class _DatePickerFieldState extends State<DatePickerField> {
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: widget.controller,
+      readOnly: true,
+      decoration: InputDecoration(
+        hintText: "Pick a due date",
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.calendar_today),
+          onPressed: _pickEndDate,
+        ),
+      ),
+    );
+  }
+
+  void _pickEndDate() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+
+    if (selectedDate != null) {
+       widget.onDateSelected(selectedDate);
+       widget.controller.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+      }
+  }
+}
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -13,9 +64,67 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // have to get the project name of the project the user is currently inside
+  // Application
   String screenTitle = "PROJECT_NAME";
-  
+  //DateTime? endDate;
+  List<Task> tasks = []; // List to store created tasks
+  //Controllers
+  final TextEditingController endDateController = TextEditingController();
+  final TextEditingController tagController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController percentageWeightingController =
+      TextEditingController();
+  final TextEditingController priorityController = TextEditingController();
+  //Form Key
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  //Tags & Subtasks
+  List<String> tags = [];
+  NotificationFrequency notificationFrequency = NotificationFrequency.daily;
+  bool notificationPreference = true;
+  // Focus Nodes
+  FocusNode titleFocusNode = FocusNode();
+  FocusNode descriptionFocusNode = FocusNode();
+  FocusNode tagFocusNode = FocusNode();
+  FocusNode percentageFocusNode = FocusNode();
+  FocusNode priorityFocusNode = FocusNode();
+ 
+
+  @override
+  void initState() {
+    super.initState();
+    titleFocusNode.addListener( () => _validateField(titleFocusNode, formKey)); // Add Listeners
+    descriptionFocusNode.addListener( () => _validateField(descriptionFocusNode,formKey));
+  }
+
+  @override
+  void dispose() {
+    titleFocusNode.removeListener( () => _validateField(titleFocusNode, formKey)); // Remove Listeners - Focus Nodes
+    titleFocusNode.dispose();
+    descriptionFocusNode.removeListener( () => _validateField(descriptionFocusNode,formKey));
+    descriptionFocusNode.dispose();
+    tagFocusNode.dispose();
+    percentageFocusNode.dispose();
+    priorityFocusNode.dispose();
+    endDateController.dispose();
+    tagController.dispose();
+    titleController.dispose();
+    descriptionController.dispose();
+    percentageWeightingController.dispose();
+    priorityController.dispose();
+   
+    super.dispose();
+  }
+
+// Validate input  
+void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
+  if (!focusNode.hasFocus) {
+    if (formKey.currentState != null) {
+      formKey.currentState?.validate();
+    }
+  }
+}
+
   Widget createProjectTimerCountdown() {
     // make this an updated countdown till the project finishes
     return const Text("PLACEHOLDER");
@@ -40,78 +149,154 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // creates the body of the create task tab
-  Widget createTaskBody() {
-    return Container(
-      child: const Text("in here"),
+ Widget createTaskBody() {
+  return Consumer<TaskProvider>(
+    builder: (context, taskProvider, child) {
+      return ListView.builder(
+        itemCount: taskProvider.tasks.length,
+        itemBuilder: (context, index) {
+          final task = taskProvider.tasks[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: ExpansionTile(
+              title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text("Priority: ${task.priority} | Due: ${DateFormat('yyyy-MM-dd').format(task.endDate)}"),
+              children: [
+                ListTile(
+                  title: const Text("Parent Project"),
+                  subtitle: Text(task.parentProject ?? "N/A"),
+                ),
+                ListTile(
+                  title: const Text("Percentage Weighting"),
+                  subtitle: Text("${task.percentageWeighting}%"),
+                ),
+                ListTile(
+                  title: const Text("Tags"),
+                  subtitle: task.listOfTags != null && task.listOfTags!.isNotEmpty
+                      ? Wrap(
+                          spacing: 8,
+                          children: task.listOfTags!.map((tag) => Chip(label: Text(tag))).toList(),
+                  )
+                    : const Text("None"),
+                ),
+                ListTile(
+                  title: const Text("Start Date"),
+                  subtitle: Text(DateFormat('yyyy-MM-dd').format(task.startDate)),
+                ),
+                ListTile(
+                  title: const Text("Members"),
+                  subtitle: Text(task.members != null && task.members!.isNotEmpty
+                      ? task.members!.entries.map((e) => "${e.key}: ${e.value}").join(", ")
+                      : "None"),
+                ),
+                ListTile(
+                  title: const Text("Notification Preference"),
+                  subtitle: Text(task.notificationPreference ? "Enabled" : "Disabled"),
+                ),
+                ListTile(
+                  title: const Text("Notification Frequency"),
+                  subtitle: Text(task.notificationFrequency.toString().split('.').last),
+                ),
+                ListTile(
+                  title: const Text("Description"),
+                  subtitle: Text(task.description),
+                ),
+                ListTile(
+                  title: const Text("Directory Path"),
+                  subtitle: Text(task.directoryPath),
+                ),
+                ListTile(
+                  title: const Text("Comments"),
+                  subtitle: Text(task.comments?.join("\n") ?? "No comments"),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+
+ 
+
+  void addTag() {
+    formKey.currentState!.validate();
+  }
+
+  void clearForm() {
+    
+    setState(() {
+      // Clear all controllers
+      print("Before clearing: ${titleController.text}");
+      titleController.clear();
+      print("After clearing: ${titleController.text}");
+      descriptionController.clear();
+      print("After clearing description: ${descriptionController.text}");
+      tagController.clear();
+      percentageWeightingController.clear();
+      print("After clearing percentageWeightingController: ${percentageWeightingController.text}");
+      priorityController.clear();
+      print("After clearing priorityController: ${priorityController.text}");
+      endDateController.clear();
+      print("After clearing endDateController: ${endDateController.text}");
+     //-------------------------------
+      print("Clear Form Values");
+      print("task title: ${titleController.text}");
+      print("task description: ${descriptionController.text}");
+      print("task priority: ${priorityController.text}");
+      print("task end date: ${endDateController.text}");
+      print("task percentage weighting: ${percentageWeightingController.text}");
+      print("task tags: ${tags}"); 
+   
+    });
+  }
+  
+
+  void submitTask() {
+    if (formKey.currentState!.validate()) {
+      // Form is valid, proceed with submission
+      print("task title: ${titleController.text}");
+      print("task description: ${descriptionController.text}");
+      print("task priority: ${priorityController.text}");
+      print("task end date: ${endDateController.text}");
+      print("task percentage weighting: ${percentageWeightingController.text}");
+      print("task tags: ${tags}");    
+      
+      print("in here now!");
+      Task newTask = Task(
+      title: titleController.text,
+      percentageWeighting: double.tryParse(percentageWeightingController.text) ?? 0.0,
+      listOfTags: tags,
+      priority: int.tryParse(priorityController.text) ?? 1 ,
+      startDate: DateTime(2024,9,7,12,00),
+      endDate: DateTime.parse(endDateController.text), 
+      description: descriptionController.text,
+      members: const {},
+      notificationPreference: notificationPreference,
+      notificationFrequency: notificationFrequency,
+      directoryPath: "path/to/directory",
     );
+    
+      Provider.of<TaskProvider>(context, listen: false).addTask(newTask);
+      
+      print("Task added to provider, checking stored tasks...");
+      Provider.of<TaskProvider>(context, listen: false).tasks.forEach((task) {
+      print("Task: ${task.title}, Tags: ${task.listOfTags}");
+    });
+          
+           
+      
+      clearForm();
+  
+    } else {
+      print("form is not valid");
+    }
   }
 
   // creates the body of the add task tab
   Widget createAddTaskBody() {
-    final TextEditingController taskTitleController = TextEditingController();
-    final TextEditingController taskDescriptionController = TextEditingController();
-    final TextEditingController subtaskController = TextEditingController();
-    final TextEditingController percentageWeightingController = TextEditingController();
-    final TextEditingController tagController = TextEditingController();
-    final List<String> subtasks = [];
-    final List<String> tags = [];
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    DateTime? dueDate;
-
-    void addSubtask() {
-      if (subtaskController.text.isNotEmpty) {
-        setState(() {
-          subtasks.add(subtaskController.text);
-        });
-        subtaskController.clear();
-      }
-    }
-
-    void addTag() {
-      if (tagController.text.isNotEmpty) {
-        setState(() {
-          tags.add(tagController.text);
-        });
-        tagController.clear();
-      }
-    }
-
-    Future<void> pickDueDate() async {
-      DateTime? selectedDate = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime.now(),
-        lastDate: DateTime.now().add(const Duration(days: 365)),
-      );
-      if (selectedDate != null) {
-        setState(() {
-          dueDate = selectedDate;
-        });
-      }
-    }
-
-    void clearForm() {
-      setState(() {
-        taskTitleController.clear();
-        taskDescriptionController.clear();
-        subtaskController.clear();
-        tagController.clear();
-        percentageWeightingController.clear();
-        subtasks.clear();
-        tags.clear();
-        dueDate = null;
-      });
-    }
-
-    void createTask() {
-      if (formKey.currentState!.validate()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Task '${taskTitleController.text}' created successfully!")),
-        );
-      }
-    }
-
     final theme = Theme.of(context);
 
     return Padding(
@@ -121,23 +306,18 @@ class _HomeState extends State<Home> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // Left Column
-
             Expanded(
               flex: 1,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Title",
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        //color: theme.colorScheme.onSurfaceVariant,//Colors.blue[800],
-                      )),
+                  Text("Title", style: theme.textTheme.titleMedium),
                   TextFormField(
-                    controller: taskTitleController,
+                    controller: titleController,
+                    focusNode: titleFocusNode,
                     decoration: InputDecoration(
                       hintText: "Enter task title",
-                      hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(153)),
                       filled: true,
                       fillColor: theme.colorScheme.surface,
                       border: OutlineInputBorder(
@@ -145,58 +325,26 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
-                    validator: (value) => value!.isEmpty ? "Title cannot be empty" : null,
-                  ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return "Title cannot be empty"; // empty input
+                      } else if (value.length > 50) {
+                        return "Title cannot exceed 50 characters"; // input exceeding limit 50 char
+                      }
+                      return null;
+                    },                    
+                    onFieldSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(descriptionFocusNode);
+                    },
+                  ),              
                   const SizedBox(height: 16),
-
-                  Text("Subtasks",
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        //color: Colors.blue[800],
-                      )),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: subtaskController,
-                          decoration: InputDecoration(
-                            hintText: "Add a subtask",
-                            hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(153)),
-                            filled: true,
-                            fillColor: theme.colorScheme.surface,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          style: TextStyle(color: theme.colorScheme.onSurface),
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.add, color: theme.colorScheme.primary),
-                        onPressed: addSubtask,
-                      ),
-                    ],
-                  ),
-                  Wrap(
-                    children: subtasks
-                        .map((subtask) => Chip(
-                      label: Text(subtask,
-                          style: TextStyle(color: theme.colorScheme.onPrimary)),
-                      backgroundColor: theme.colorScheme.primary,
-                    ))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Text("Description",
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        //color: Colors.blue[800],
-                      )),
+                  Text("Description", style: theme.textTheme.titleMedium),
                   TextFormField(
-                    controller: taskDescriptionController,
+                    controller: descriptionController,
+                    focusNode: descriptionFocusNode,
                     maxLines: 3,
                     decoration: InputDecoration(
                       hintText: "Enter task description",
-                      hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(153)),
                       filled: true,
                       fillColor: theme.colorScheme.surface,
                       border: OutlineInputBorder(
@@ -204,23 +352,26 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
-                    validator: (value) => value!.isEmpty ? "Description cannot be empty" : null,
+                    validator: (value) =>
+                        value == null || value.trim().isEmpty ? "Description cannot be empty" : null,                  
+                    onFieldSubmitted: (_) {
+                    FocusScope.of(context).requestFocus(priorityFocusNode);
+                    },
                   ),
                   const SizedBox(height: 16),
-
-                  Text("Priority Level",
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        //color: Colors.blue[800],
-                      )),
-                  DropdownButtonFormField<int>(
-                    items: [1, 2, 3, 4, 5]
+                  Text("Priority Level", style: theme.textTheme.titleMedium),
+                  DropdownButtonFormField(
+                    items: ["1", "2", "3", "4","5"]
                         .map((level) => DropdownMenuItem(
-                      value: level,
-                      child: Text("Priority $level",
-                          style: TextStyle(color: theme.colorScheme.onSurface)),
-                    ))
+                              value: level,
+                              child: Text("Priority $level",
+                                  style: TextStyle(
+                                      color: theme.colorScheme.onSurface)),
+                            ))
                         .toList(),
-                    onChanged: (value) {},
+                    onChanged: (value) {
+                      priorityController.text = value ?? "1" ;                     
+                    },
                     decoration: InputDecoration(
                       hintText: "Select priority",
                       filled: true,
@@ -231,49 +382,28 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  Text("Due Date",
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        //color: Colors.blue[800],
-                      )),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          dueDate == null
-                              ? "No date selected"
-                              : "${dueDate!.day}/${dueDate!.month}/${dueDate!.year}",
-                          style: TextStyle(color: theme.colorScheme.onSurface),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: pickDueDate,
-                        child: Text("Pick Date", style: TextStyle(color: theme.colorScheme.primary)),
-                      ),
-                    ],
+                  DatePickerField(
+                    controller: endDateController,
+                    onDateSelected: (selectedDate) {                    
+                    },
                   ),
                 ],
               ),
             ),
-
             const SizedBox(width: 32), // Spacing between columns
-
             // Right Column
             Expanded(
               flex: 1,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Percentage Weighting",
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        //color: Colors.blue[800],
-                      )),
+                  Text("Task's Weight",
+                      style: theme.textTheme.titleMedium),
                   TextFormField(
                     controller: percentageWeightingController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      hintText: "Enter percentage",
-                      hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(153)),
+                      hintText: "Weighting Percentage (1-100)",
                       filled: true,
                       fillColor: theme.colorScheme.surface,
                       border: OutlineInputBorder(
@@ -281,21 +411,31 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return "Percentage cannot be empty";
+                      }
+                      final percentage = int.tryParse(value);
+                      if (percentage == null || percentage < 1 || percentage > 100) {
+                        return "Enter a value between 1 and 100";
+                      }
+                      return null;
+                    },
+                    onFieldSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(tagFocusNode);
+                    },
                   ),
-                  const SizedBox(height: 16),
 
-                  Text("Tags",
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        //color: Colors.blue[800],
-                      )),
+                  const SizedBox(height: 16),
+                  Text("Tags", style: theme.textTheme.titleMedium),
                   Row(
                     children: [
                       Expanded(
                         child: TextFormField(
                           controller: tagController,
+                          focusNode: tagFocusNode,
                           decoration: InputDecoration(
                             hintText: "Add a tag",
-                            hintStyle: TextStyle(color: theme.colorScheme.onSurface.withAlpha(153)),
                             filled: true,
                             fillColor: theme.colorScheme.surface,
                             border: OutlineInputBorder(
@@ -303,29 +443,33 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                           style: TextStyle(color: theme.colorScheme.onSurface),
-                        ),
+                       ),
                       ),
                       IconButton(
                         icon: Icon(Icons.add, color: theme.colorScheme.primary),
-                        onPressed: addTag,
+                        onPressed: () {
+                          if (tagController.text.trim().isNotEmpty) {
+                            setState(() {
+                              tags.add(tagController.text.trim());
+                            });
+                            tagController.clear();
+                          }
+                        },
                       ),
                     ],
                   ),
                   Wrap(
                     children: tags
                         .map((tag) => Chip(
-                      label: Text(tag,
-                          style: TextStyle(color: theme.colorScheme.onPrimary)),
-                      backgroundColor: theme.colorScheme.primary,
-                    ))
+                              label: Text(tag,
+                                  style: TextStyle(
+                                      color: theme.colorScheme.onPrimary)),
+                              backgroundColor: theme.colorScheme.primary,
+                            ))
                         .toList(),
                   ),
                   const SizedBox(height: 16),
-
-                  Text("File Drop",
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        //color: Colors.blue[800],
-                      )),
+                  Text("File Drop", style: theme.textTheme.titleMedium),
                   Container(
                     height: 100,
                     width: double.infinity,
@@ -338,7 +482,6 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   const Spacer(),
-
                   // Action Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -349,18 +492,21 @@ class _HomeState extends State<Home> {
                           backgroundColor: theme.colorScheme.primary,
                         ),
                         child: Text("Clear",
-                            style: TextStyle(color: theme.colorScheme.onPrimary)
-                            ),
+                            style:
+                                TextStyle(color: theme.colorScheme.onPrimary)),
                       ),
                       const SizedBox(width: 16),
                       ElevatedButton(
-                        onPressed: createTask,
+                        onPressed: () {
+                          submitTask();
+                          tags =[];
+                        },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary,
+                          backgroundColor: theme.colorScheme.secondary,
                         ),
-                        child: Text("Create",
-                            style: TextStyle(color: theme.colorScheme.onPrimary)
-                            ),
+                        child: Text("Submit",
+                            style: TextStyle(
+                                color: theme.colorScheme.onSecondary)),
                       ),
                     ],
                   ),
@@ -373,169 +519,13 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // creates the body of the messages tab
-  Widget createMessages() {
-    return Container();
-  }
-
-  // creates the body of the create files tab
-  Widget createFiles() {
-    return Container();
-  }
-
-  // creates the body of the contribution report tab
-  Widget createContributionReportBody() {
-    return Container();
-  }
-
-  // creates the body of the meeting tab
-  Widget createMeetings() {
-    return Container();
-  }
-
-  // creates Settings tab
-  /*Widget createSettingsBody() {
-    final theme = Theme.of(context);
-  return Consumer<ThemeProvider>(
-    builder: (context, themeProvider, child) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Settings", style: Theme.of(context).textTheme.headlineSmall),
-
-            ListTile(
-              title: const Text("Select Theme"),
-              subtitle: Text(
-                themeProvider.themeType.toString().split('.').last.toUpperCase(),
-              ),
-            ),
-
-            // Light Theme Option
-            RadioListTile<ThemeType>(
-              title: const Text("Light Theme"),
-              value: ThemeType.light,
-              groupValue: themeProvider.themeType,
-              onChanged: (ThemeType? value) {
-                if (value != null) themeProvider.setTheme(value);
-              },
-            ),
-
-            // Dark Theme Option
-            RadioListTile<ThemeType>(
-              title: const Text("Dark Theme"),
-              value: ThemeType.dark,
-              groupValue: themeProvider.themeType,
-              onChanged: (ThemeType? value) {
-                if (value != null) themeProvider.setTheme(value);
-              },
-            ),
-
-            // Custom Theme Option
-            RadioListTile<ThemeType>(
-              title: const Text("Custom Theme"),
-              value: ThemeType.custom,
-              groupValue: themeProvider.themeType,
-              onChanged: (ThemeType? value) {
-                if (value != null) themeProvider.setTheme(value);
-              },
-            ),
-
-            // Custom Theme Settings (only shown when "Custom Theme" is selected)
-            if (themeProvider.themeType == ThemeType.custom) ...[
-  const SizedBox(height: 16.0),
-
-  // Color Picker for Primary Color
-  ListTile(
-    title: const Text('Surface Color'),
-    trailing: CircleAvatar(
-      backgroundColor: theme.colorScheme.surface, // ?? Colors.blue, // Default if null
-    ),
-    onTap: () async {
-      final Color? newColor = await _showColorPicker(context, theme.colorScheme.surface);// ?? Colors.blue);
-      if (newColor != null) {
-        themeProvider.setCustomTheme(
-          surfaceColor: newColor,
-          onSurfaceColor: theme.colorScheme.onSurface?? Colors.green,  // Set accent color (default to green if null)
-        );
-      }
-    },
-  ),
-
-  // Color Picker for Accent (Secondary) Color
-  ListTile(
-    title: const Text('Text Color'),
-    trailing: CircleAvatar(
-      backgroundColor: theme.colorScheme.onSurface, // ?? Colors.green, // Default if null
-    ),
-    onTap: () async {
-      final Color? newColor = await _showColorPicker(context,  theme.colorScheme.onSurface);// ?? Colors.green);
-      if (newColor != null) {
-        themeProvider.setCustomTheme(
-          surfaceColor:  theme.colorScheme.surface,// ?? Colors.blue,  // Set primary color (default to blue if null)
-          onSurfaceColor: newColor,
-        );
-      }
-    },
-  ),
-            ],
-          ],
-        ),
-      );
-    },
-  );
-}
-
-// Helper function to show a color picker
-Future<Color?> _showColorPicker(BuildContext context, Color currentColor) async {
-  Color selectedColor = currentColor; // Store the selected color
-  
-  return showDialog<Color>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Pick a color'),
-      content: SingleChildScrollView(
-        child: ColorPicker(
-          pickerColor: selectedColor, // Initial color
-          onColorChanged: (Color color) {
-            selectedColor = color; // Update selected color when changed
-          },
-          pickerAreaHeightPercent: 0.8,
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(), // Cancel without saving
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop(selectedColor); // Return the selected color
-          },
-          child: const Text('OK'),
-        ),
-      ],
-    ),
-  );
-}*/
-
-
-
   @override
   Widget build(BuildContext context) {
-    
     return DefaultTabController(
-      length: 8,
-      initialIndex: 1,
+      length: 3,
       child: Scaffold(
-        
         appBar: AppBar(
-          // the title of the bar will update depending on what column you have
-          // currently selected
           title: Text(screenTitle),
-          // the bottom will be the list of columns you can switch between to
-          // switch tabs
           actions: [
             IconButton(
               icon: const Icon(Icons.settings),
@@ -548,29 +538,20 @@ Future<Color?> _showColorPicker(BuildContext context, Color currentColor) async 
             ),
           ],
           bottom: const TabBar(
-            tabs: <Widget>[
+            tabs: [
               Tab(text: "Home"),
               Tab(text: "Tasks"),
-              Tab(
-                text: "Add Tasks",
-              ),
-              Tab(text: "Messages"),
-              Tab(text: "Files"),
-              Tab(text: "Meetings"),
-              Tab(text: "Contribution Report"),
+              Tab(text: "Add Task"),
             ],
           ),
         ),
-        // The body will store the different contents of the screens
-        body: TabBarView(children: <Widget>[
-          createHomeBody(),
-          createTaskBody(),
-          createAddTaskBody(),
-          createMessages(),
-          createFiles(),
-          createMeetings(),
-          createContributionReportBody(),          
-        ]),
+        body: TabBarView(
+          children: [
+            createHomeBody(),
+            createTaskBody(),
+            createAddTaskBody(),
+          ],
+        ),
       ),
     );
   }
