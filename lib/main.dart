@@ -10,20 +10,17 @@ import 'providers/tasks_provider.dart';
 import 'usser/usserProfilePage.dart';
 import 'package:sevenc_iteration_two/testingNavigation.dart';
 
-
-
-void main() {  
+void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => ThemeProvider()), 
-        ChangeNotifierProvider(create: (context) => TaskProvider()),  
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+        ChangeNotifierProvider(create: (context) => TaskProvider()),
       ],
       child: const MyApp(),
     ),
-  ); 
-  }
-
+  );
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -33,7 +30,7 @@ class MyApp extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
-      theme: themeProvider.currentTheme,  // Set theme based on provider
+      theme: themeProvider.currentTheme, // Set theme based on provider
       initialRoute: "/home",
       routes: {
         "/home": (context) => const Home(),
