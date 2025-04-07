@@ -407,6 +407,27 @@ class _HomeState extends State<Home> {
                     controller: endDateController,
                     onDateSelected: (selectedDate) {},
                   ),
+                  const SizedBox(height: 16),
+                  Text("Notification Frequency", style: theme.textTheme.titleMedium),
+                  DropdownButtonFormField<String>(
+                    items: ['daily', 'weekly', 'monthly', 'none' ]
+                        .map((level) => DropdownMenuItem(
+                              value: level,
+                              child: Text(level,
+                                  style:
+                                      TextStyle(color: theme.colorScheme.onSurface)),
+                            ))
+                        .toList(),
+                    onChanged: (value) {},
+                    decoration: InputDecoration(
+                      hintText: "Select Frequency",
+                      filled: true,
+                      fillColor: theme.colorScheme.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -417,6 +438,22 @@ class _HomeState extends State<Home> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text("This belongs to:", style: theme.textTheme.titleMedium),
+                  TextFormField(
+                    controller: titleController,
+                    focusNode: titleFocusNode,
+                    decoration: InputDecoration(
+                      hintText: "Project's Name",
+                      filled: true,
+                      fillColor: theme.colorScheme.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                   
+                  ),
+                  const SizedBox(height: 16),
                   Text("Task's Weight", style: theme.textTheme.titleMedium),
                   TextFormField(
                     controller: percentageWeightingController,
@@ -490,15 +527,23 @@ class _HomeState extends State<Home> {
                         .toList(),
                   ),
                   const SizedBox(height: 16),
-                  Text("File Drop", style: theme.textTheme.titleMedium),
-                  Container(
-                    height: 100,
-                    width: double.infinity,
-                    color: theme.colorScheme.surface,
-                    child: Center(
-                      child: Text(
-                        "Drop files here (Doesn't have any functionality yet)",
-                        style: TextStyle(color: theme.colorScheme.onSurface),
+                  Text("Assignee(s)", style: theme.textTheme.titleMedium),
+                  DropdownButtonFormField<String>(
+                    items: ['projectMember1', 'projectMember2', 'projectMember3']
+                        .map((level) => DropdownMenuItem(
+                              value: level,
+                              child: Text(level,
+                                  style:
+                                      TextStyle(color: theme.colorScheme.onSurface)),
+                            ))
+                        .toList(),
+                    onChanged: (value) {},
+                    decoration: InputDecoration(
+                      hintText: "Project Members",//add the list chips
+                      filled: true,
+                      fillColor: theme.colorScheme.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
