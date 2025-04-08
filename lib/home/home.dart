@@ -10,11 +10,13 @@ import 'components/compact/compact_components.dart';
 
 class DatePickerField extends StatefulWidget {
   final TextEditingController controller;
+  final FocusNode focusNode;
   final Function(DateTime) onDateSelected;
 
   const DatePickerField({
     Key? key,
     required this.controller,
+    required this.focusNode,
     required this.onDateSelected,
   }) : super(key: key);
 
@@ -27,9 +29,10 @@ class _DatePickerFieldState extends State<DatePickerField> {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: widget.controller,
+      focusNode: widget.focusNode,
       readOnly: true,
       decoration: InputDecoration(
-        hintText: "Pick a due date",
+        hintText: "Pick Date",
         filled: true,
         fillColor: Theme.of(context).colorScheme.surface,
         border: OutlineInputBorder(
@@ -40,6 +43,11 @@ class _DatePickerFieldState extends State<DatePickerField> {
           onPressed: _pickEndDate,
         ),
       ),
+      validator: (value) => value == null || value.isEmpty ? "Please select a date" : null,
+      onTap: () => _pickEndDate(), 
+      onFieldSubmitted: (_) {
+        FocusScope.of(context).nextFocus(); 
+      },
     );
   }
 
@@ -68,15 +76,15 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   // Layout variables from home_screen.dart
   String screenTitle = "Team 7C";
-
+  //To create a task we need project's name, project's tasks' name list, 
+  //project's capacity(remaining percentage), notification preference(enabled/daily)
   // Task functionality variables from original home.dart
   List<Task> tasks = [];
   final TextEditingController endDateController = TextEditingController();
   final TextEditingController tagController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController percentageWeightingController =
-      TextEditingController();
+  final TextEditingController percentageWeightingController = TextEditingController();
   final TextEditingController priorityController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   List<String> tags = [];
@@ -85,30 +93,25 @@ class _HomeState extends State<Home> {
   // Focus Nodes
   FocusNode titleFocusNode = FocusNode();
   FocusNode descriptionFocusNode = FocusNode();
+  FocusNode endDateFocusNode = FocusNode();
   FocusNode tagFocusNode = FocusNode();
   FocusNode percentageFocusNode = FocusNode();
   FocusNode priorityFocusNode = FocusNode();
 
   @override
   void initState() {
-    super.initState();
-    titleFocusNode.addListener(() => _validateField(titleFocusNode, formKey));
-    descriptionFocusNode
-        .addListener(() => _validateField(descriptionFocusNode, formKey));
+    super.initState();    
   }
 
   @override
   void dispose() {
-    titleFocusNode
-        .removeListener(() => _validateField(titleFocusNode, formKey));
     titleFocusNode.dispose();
-    descriptionFocusNode
-        .removeListener(() => _validateField(descriptionFocusNode, formKey));
     descriptionFocusNode.dispose();
     tagFocusNode.dispose();
     percentageFocusNode.dispose();
     priorityFocusNode.dispose();
     endDateController.dispose();
+    endDateFocusNode.dispose();
     tagController.dispose();
     titleController.dispose();
     descriptionController.dispose();
@@ -117,15 +120,7 @@ class _HomeState extends State<Home> {
     super.dispose();
   }
 
-  // Validate input method from original home.dart
-  void _validateField(FocusNode focusNode, GlobalKey<FormState> formKey) {
-    if (!focusNode.hasFocus) {
-      if (formKey.currentState != null) {
-        formKey.currentState?.validate();
-      }
-    }
-  }
-
+  
   // Updated Home Body layout from home_screen.dart
   Widget createHomeBody() {
     return Padding(
@@ -290,6 +285,7 @@ class _HomeState extends State<Home> {
       priorityController.clear();
       endDateController.clear();
       tags = [];
+      formKey.currentState?.reset();
     });
   }
 
@@ -403,11 +399,13 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  Text("Due Date:", style: theme.textTheme.titleMedium),
                   DatePickerField(
                     controller: endDateController,
+                    focusNode: endDateFocusNode,
                     onDateSelected: (selectedDate) {},
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 16),/*
                   Text("Notification Frequency", style: theme.textTheme.titleMedium),
                   DropdownButtonFormField<String>(
                     items: ['daily', 'weekly', 'monthly', 'none' ]
@@ -427,7 +425,7 @@ class _HomeState extends State<Home> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                  ),
+                  ),*/
                 ],
               ),
             ),
@@ -438,7 +436,7 @@ class _HomeState extends State<Home> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("This belongs to:", style: theme.textTheme.titleMedium),
+                  /*Text("This belongs to:", style: theme.textTheme.titleMedium),
                   TextFormField(
                     controller: titleController,
                     focusNode: titleFocusNode,
@@ -452,7 +450,7 @@ class _HomeState extends State<Home> {
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
                    
-                  ),
+                  ),*/
                   const SizedBox(height: 16),
                   Text("Task's Weight", style: theme.textTheme.titleMedium),
                   TextFormField(
@@ -527,7 +525,7 @@ class _HomeState extends State<Home> {
                         .toList(),
                   ),
                   const SizedBox(height: 16),
-                  Text("Assignee(s)", style: theme.textTheme.titleMedium),
+                  /*Text("Assignee(s)", style: theme.textTheme.titleMedium),
                   DropdownButtonFormField<String>(
                     items: ['projectMember1', 'projectMember2', 'projectMember3']
                         .map((level) => DropdownMenuItem(
@@ -546,7 +544,7 @@ class _HomeState extends State<Home> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                  ),
+                  ),*/
                   const Spacer(),
                   // Action Buttons
                   Row(
