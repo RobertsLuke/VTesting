@@ -75,21 +75,28 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   // Layout variables from home_screen.dart
-  String screenTitle = "Team 7C";
-  //To create a task we need project's name, project's tasks' name list, 
+  String screenTitle = "Team 7C"; // User name 
+  //To create a task retrieve and change variables of project's name, project's tasks' name list, 
   //project's capacity(remaining percentage), notification preference(enabled/daily)
   // Task functionality variables from original home.dart
+  int projectCapacity = 78;
   List<Task> tasks = [];
+  List<String> projectTasks = ["Task1", "Task 2"];
+  String projectName = "MyProject";
+  List<String> get possibleTaskParent => [projectName, ...projectTasks]; // dynamically construction when accessing it
+
+
   final TextEditingController endDateController = TextEditingController();
   final TextEditingController tagController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController percentageWeightingController = TextEditingController();
   final TextEditingController priorityController = TextEditingController();
+  final notificationFrequencyController = ValueNotifier<NotificationFrequency>(NotificationFrequency.daily);
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   List<String> tags = [];
-  NotificationFrequency notificationFrequency = NotificationFrequency.daily;
-  bool notificationPreference = true;
+  NotificationFrequency notificationFrequency = NotificationFrequency.daily; //retrieve project's value
+  bool notificationPreference = true; //retrieve project's value
   // Focus Nodes
   FocusNode titleFocusNode = FocusNode();
   FocusNode descriptionFocusNode = FocusNode();
@@ -105,6 +112,7 @@ class _HomeState extends State<Home> {
 
   @override
   void dispose() {
+    notificationFrequencyController.dispose(); 
     titleFocusNode.dispose();
     descriptionFocusNode.dispose();
     tagFocusNode.dispose();
@@ -285,6 +293,7 @@ class _HomeState extends State<Home> {
       priorityController.clear();
       endDateController.clear();
       tags = [];
+      notificationPreference = true;
       formKey.currentState?.reset();
     });
   }
@@ -302,7 +311,7 @@ class _HomeState extends State<Home> {
         description: descriptionController.text,
         members: const {},
         notificationPreference: notificationPreference,
-        notificationFrequency: notificationFrequency,
+        notificationFrequency: notificationFrequencyController.value,
         directoryPath: "path/to/directory",
       );
 
@@ -310,6 +319,20 @@ class _HomeState extends State<Home> {
       clearForm();
     }
   }
+//Format ENUM for Frequency
+
+  String _formatFrequency(NotificationFrequency frequency) {
+  switch (frequency) {
+    case NotificationFrequency.daily:
+      return "Daily";
+    case NotificationFrequency.weekly:
+      return "Weekly";
+    case NotificationFrequency.monthly:
+      return "Monthly";
+    case NotificationFrequency.none:
+      return "None";
+  }
+}
 
   // Original add task body from home.dart
   Widget createAddTaskBody() {
@@ -346,7 +369,8 @@ class _HomeState extends State<Home> {
                         return "Title cannot be empty";
                       } else if (value.length > 50) {
                         return "Title cannot exceed 50 characters";
-                      }
+                      } else if (projectTasks.contains(value)) {
+                        return "Choose a different name.";}
                       return null;
                     },
                     onFieldSubmitted: (_) {
@@ -405,27 +429,42 @@ class _HomeState extends State<Home> {
                     focusNode: endDateFocusNode,
                     onDateSelected: (selectedDate) {},
                   ),
-                  const SizedBox(height: 16),/*
-                  Text("Notification Frequency", style: theme.textTheme.titleMedium),
-                  DropdownButtonFormField<String>(
-                    items: ['daily', 'weekly', 'monthly', 'none' ]
-                        .map((level) => DropdownMenuItem(
-                              value: level,
-                              child: Text(level,
-                                  style:
-                                      TextStyle(color: theme.colorScheme.onSurface)),
-                            ))
-                        .toList(),
-                    onChanged: (value) {},
-                    decoration: InputDecoration(
-                      hintText: "Select Frequency",
-                      filled: true,
-                      fillColor: theme.colorScheme.surface,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 16),
+                  Text("Notification", style: theme.textTheme.titleMedium),                  
+                    Expanded(
+                      child: ValueListenableBuilder<NotificationFrequency>(
+                        valueListenable: notificationFrequencyController,
+                        builder: (context, frequency, child) {
+                          return DropdownButtonFormField<NotificationFrequency>(
+                            items: NotificationFrequency.values.map((frequency) {
+                              return DropdownMenuItem(
+                                value: frequency,
+                                child: Text(
+                                  _formatFrequency(frequency),
+                                  style: TextStyle(color: theme.colorScheme.onSurface),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                notificationFrequencyController.value = value; 
+                              }
+                              if(value == NotificationFrequency.none){
+                                notificationPreference = false;
+                              }
+                            },
+                            decoration: InputDecoration(
+                              hintText: "Select Frequency",
+                              filled: true,
+                              fillColor: theme.colorScheme.surface,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                  ),*/
+                    ),                   
                 ],
               ),
             ),
@@ -473,7 +512,10 @@ class _HomeState extends State<Home> {
                       if (percentage == null ||
                           percentage < 1 ||
                           percentage > 100) {
-                        return "Enter a value between 1 and 100";
+                        return "Enter a value between 1 and 100";}
+                      if(percentage > projectCapacity){
+                        return "Task weight must be less than $projectCapacity .";
+                      
                       }
                       return null;
                     },
