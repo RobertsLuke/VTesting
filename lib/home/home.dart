@@ -84,7 +84,7 @@ class _HomeState extends State<Home> {
   List<String> projectTasks = ["Task1", "Task 2"];
   String projectName = "MyProject";
   List<String> get possibleTaskParent => [projectName, ...projectTasks]; // dynamically construction when accessing it
-
+  
 
   final TextEditingController endDateController = TextEditingController();
   final TextEditingController tagController = TextEditingController();
@@ -92,7 +92,9 @@ class _HomeState extends State<Home> {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController percentageWeightingController = TextEditingController();
   final TextEditingController priorityController = TextEditingController();
-  final notificationFrequencyController = ValueNotifier<NotificationFrequency>(NotificationFrequency.daily);
+
+  final notificationFrequencyNotifier = ValueNotifier<NotificationFrequency>(NotificationFrequency.daily);
+  late final ValueNotifier<String> taskParentNotifier;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   List<String> tags = [];
   NotificationFrequency notificationFrequency = NotificationFrequency.daily; //retrieve project's value
@@ -107,12 +109,14 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    super.initState();    
+    super.initState();  
+     taskParentNotifier = ValueNotifier<String>(possibleTaskParent.first);
   }
 
   @override
   void dispose() {
-    notificationFrequencyController.dispose(); 
+    notificationFrequencyNotifier.dispose(); 
+    taskParentNotifier.dispose();
     titleFocusNode.dispose();
     descriptionFocusNode.dispose();
     tagFocusNode.dispose();
@@ -293,6 +297,7 @@ class _HomeState extends State<Home> {
       priorityController.clear();
       endDateController.clear();
       tags = [];
+      taskParentNotifier.value = possibleTaskParent.first;
       notificationPreference = true;
       formKey.currentState?.reset();
     });
@@ -302,6 +307,7 @@ class _HomeState extends State<Home> {
     if (formKey.currentState!.validate()) {
       Task newTask = Task(
         title: titleController.text,
+        parentProject: taskParentNotifier.value,
         percentageWeighting:
             double.tryParse(percentageWeightingController.text) ?? 0.0,
         listOfTags: tags,
@@ -311,7 +317,7 @@ class _HomeState extends State<Home> {
         description: descriptionController.text,
         members: const {},
         notificationPreference: notificationPreference,
-        notificationFrequency: notificationFrequencyController.value,
+        notificationFrequency: notificationFrequencyNotifier.value,
         directoryPath: "path/to/directory",
       );
 
@@ -336,7 +342,7 @@ class _HomeState extends State<Home> {
 
   // Original add task body from home.dart
   Widget createAddTaskBody() {
-    final theme = Theme.of(context);
+    final theme = Theme.of(context);    
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -433,7 +439,7 @@ class _HomeState extends State<Home> {
                   Text("Notification", style: theme.textTheme.titleMedium),                  
                     Expanded(
                       child: ValueListenableBuilder<NotificationFrequency>(
-                        valueListenable: notificationFrequencyController,
+                        valueListenable: notificationFrequencyNotifier,
                         builder: (context, frequency, child) {
                           return DropdownButtonFormField<NotificationFrequency>(
                             items: NotificationFrequency.values.map((frequency) {
@@ -447,7 +453,7 @@ class _HomeState extends State<Home> {
                             }).toList(),
                             onChanged: (value) {
                               if (value != null) {
-                                notificationFrequencyController.value = value; 
+                                notificationFrequencyNotifier.value = value; 
                               }
                               if(value == NotificationFrequency.none){
                                 notificationPreference = false;
@@ -468,28 +474,39 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
-            const SizedBox(width: 32), // Spacing between columns
+            const SizedBox(width: 32), 
             // Right Column
             Expanded(
               flex: 1,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /*Text("This belongs to:", style: theme.textTheme.titleMedium),
-                  TextFormField(
-                    controller: titleController,
-                    focusNode: titleFocusNode,
+                  Text("This belongs to:", style: theme.textTheme.titleMedium),
+                  DropdownButtonFormField<String>(
+                    value: taskParentNotifier.value, 
+                    items: possibleTaskParent.map((parent) {
+                      return DropdownMenuItem(
+                        value: parent,
+                        child: Text(
+                          parent,
+                          style: TextStyle(color: theme.colorScheme.onSurface),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        taskParentNotifier.value = value; // Update taskParentNotifier.value
+                      }
+                    },
                     decoration: InputDecoration(
-                      hintText: "Project's Name",
+                      hintText: "Select Parent Task",
                       filled: true,
                       fillColor: theme.colorScheme.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    style: TextStyle(color: theme.colorScheme.onSurface),
-                   
-                  ),*/
+                  ),                   
                   const SizedBox(height: 16),
                   Text("Task's Weight", style: theme.textTheme.titleMedium),
                   TextFormField(
@@ -567,7 +584,7 @@ class _HomeState extends State<Home> {
                         .toList(),
                   ),
                   const SizedBox(height: 16),
-                  /*Text("Assignee(s)", style: theme.textTheme.titleMedium),
+                  Text("Assignee(s)", style: theme.textTheme.titleMedium),
                   DropdownButtonFormField<String>(
                     items: ['projectMember1', 'projectMember2', 'projectMember3']
                         .map((level) => DropdownMenuItem(
@@ -586,7 +603,7 @@ class _HomeState extends State<Home> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                  ),*/
+                  ),
                   const Spacer(),
                   // Action Buttons
                   Row(
