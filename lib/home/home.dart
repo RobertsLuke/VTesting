@@ -7,6 +7,7 @@ import '../providers/tasks_provider.dart';
 import '../Objects/task.dart';
 import 'components/components.dart';
 import 'components/compact/compact_components.dart';
+import 'components/add_task_screen.dart';
 
 class DatePickerField extends StatefulWidget {
   final TextEditingController controller;
@@ -675,7 +676,7 @@ class _HomeState extends State<Home> {
         body: TabBarView(children: <Widget>[
           createHomeBody(),
           createTaskBody(),
-          createAddTaskBody(),
+          AddTaskScreen(),
         ]),
       ),
     );
