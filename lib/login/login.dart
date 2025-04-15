@@ -36,6 +36,45 @@ class _LoginScreenState extends State<LoginScreen> {
       // validates form
       if (_formKey.currentState!.validate()) {
         print('BUTTON PRESSED3');
+
+        // need to use regex against the input fields
+        // if you are logging in, there won't be a username input field
+
+        String emailRegOutcome = regexEmail(email.text);
+
+        // "0" is an acceptable outcome
+        if (emailRegOutcome != "0") {
+          setState(() {
+            emailErrorText = emailRegOutcome;
+          });
+        }
+
+        String passwordRegOutcome = regexPassword(password.text);
+
+        if (passwordRegOutcome != "0") {
+          setState(() {
+            passwordErrorText = passwordRegOutcome;
+          });
+        }
+
+        // since username is an input field exclusively for the login screen
+        // have to first make sure that the user is on login screen
+        if (!isLoginMode) {
+          String usernameRegOutcome = regexUsername(username.text);
+
+          // setting the state then exiting the function early
+          if (usernameRegOutcome != "0") { setState(() {
+            usernameErrorText = usernameRegOutcome;
+          });
+          return;
+          }
+
+        }
+
+        // if the regex fails for the email or password, the function will
+        // exit early
+        if (emailRegOutcome != "0" || passwordRegOutcome != "0") { return; }
+
         // if form validates successfully then this block executes
 
         context.read<Usser>().usserName = username.text;
@@ -89,7 +128,25 @@ class _LoginScreenState extends State<LoginScreen> {
               // ADD NAVIGATION TO OTHER SCREEN
               // CURRENTLY SETTING IT TO JOIN SCREEN BUT THINK ABOUT HOW
               // WE WANT TO HANDLE THIS
-              Navigator.pushNamed(context, "/join");
+
+              // adding check to make sure that the returning user is a part of
+              // a project. If not, they will be redirected to the join screen
+
+              String projects = await context.read<Usser>().getProjects();
+
+              print("Projects: $projects");
+              print(".$projects.");
+
+              // projects will be '[]' if it has no projects
+              if (projects == '[]\n') {
+                print("projects equal");
+                Navigator.pushNamed(context, "/join");
+              }
+              else {
+                print("projects not equal");
+                Navigator.pushNamed(context, "/home");
+              }
+
             }
             else {
               // the password is incorrect so need to update the text form field
@@ -101,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             }
           }
-        }
+        }   
         // the user is trying to sign up
         else {
           print("USER IF TRYING TO SIGN UP");

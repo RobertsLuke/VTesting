@@ -103,7 +103,7 @@ class Usser extends ChangeNotifier {
     // this function will get the projects that the usser is a part of
     // THIS FUNCTION IS A WORK IN PROGRESS SO THERE MAY BE UNEXPECTED BEHAVIOUR
 
-    dynamic id = getID();
+    dynamic id = await getID();
 
     final Uri request = Uri.parse(
         "http://127.0.0.1:5000/get/user/projects?user_id=$id");

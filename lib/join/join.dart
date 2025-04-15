@@ -3,6 +3,7 @@ import '../usser/usserObject.dart';
 import 'project.dart';
 import 'package:provider/provider.dart';
 import './input_field_containers.dart';
+import 'validation.dart';
 
 class JoinProject extends StatefulWidget {
   const JoinProject({super.key});
@@ -60,22 +61,6 @@ class _JoinProjectState extends State<JoinProject> {
           }
       ),
     );
-  }
-
-  // validator function for the group id input field to make sure it meets requirements
-  String? idInputValidator(String value) {
-    if (value.isEmpty) {
-      return "Can not leave this field empty";
-    }
-    return null;
-  }
-
-  // validator function for the password input field to make sure it meets requriements
-  String? passwordInputValidator(String value) {
-    if (value.isEmpty) {
-      return "Can not leave this field empty";
-    }
-    return null;
   }
 
   // this function will be called when the user taps the submit button

@@ -34,8 +34,8 @@ Container usernameContainer() {
         const SizedBox(height: 50,),
         Text("Username", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
         SizedBox(
-            width: 200,
-            child: createInputField(username, "Enter your username", 30, usernameInputValidator, usernameErrorText)
+            width: 400,
+            child: createInputField(username, "Enter your username", 100, usernameInputValidator, usernameErrorText)
         ),
 
       ],
@@ -51,8 +51,8 @@ Container emailContainer() {
         const SizedBox(height: 50,),
         Text("Email", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
         SizedBox(
-            width: 200,
-            child: createInputField(email, "Enter your email", 30, emailInputValidator, emailErrorText)
+            width: 400,
+            child: createInputField(email, "Enter your email", 40, emailInputValidator, emailErrorText)
         ),
       ],
     ),
@@ -66,8 +66,8 @@ Container passwordContainer() {
         Text("Password", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[300])),
         const SizedBox(height: 50),
         SizedBox(
-            width: 200,
-            child: createInputField(password, "Enter Password", 30, passwordInputValidator, passwordErrorText)
+            width: 400,
+            child: createInputField(password, "Enter Password", 100, passwordInputValidator, passwordErrorText)
         ),
       ],
     ),
