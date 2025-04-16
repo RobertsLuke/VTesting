@@ -31,8 +31,8 @@ class Task with ChangeNotifier {
     required this.directoryPath,
   List<String>? comments,
   })  :  comments = comments ?? [] {
-    // Check if endDate is provided and perform validation
-    if ( endDate.isBefore(startDate!)) {
+    
+    if ( endDate.isBefore(startDate)) {
       throw ArgumentError("End date must be after start date.");
     }
     if (description.length > 400) {

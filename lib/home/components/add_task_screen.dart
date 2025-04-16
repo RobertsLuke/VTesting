@@ -422,9 +422,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                                   print("Tags: ${task.listOfTags}");
                                   print("Parent Project: ${task.parentProject}");
                                   print("Notification Frequency: ${task.notificationFrequency}");
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          "Task '${task.title}' created successfully!")),
+                                );
+                                
                                 }
                               },
-                              style: ElevatedButton.styleFrom(
+                                style: ElevatedButton.styleFrom(
                                 backgroundColor: theme.colorScheme.secondary,
                               ),
                               child: Text("Submit",
@@ -438,8 +444,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   ),
                 ],
               ),
-
-
             ),
           ),
         ),
