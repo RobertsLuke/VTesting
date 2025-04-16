@@ -9,6 +9,21 @@ import 'components/components.dart';
 import 'components/compact/compact_components.dart';
 import 'components/add_task_screen.dart';
 
+enum Role { editor, reader }
+
+extension RoleExtension on Role {
+  String get name {
+    switch (this) {
+      case Role.editor:
+        return 'Editor';
+      case Role.reader:
+        return 'Reader';
+      default:
+        return '';
+    }
+  }
+}
+
 class DatePickerField extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -85,6 +100,9 @@ class _HomeState extends State<Home> {
   List<String> projectTasks = ["Task1", "Task 2"];
   String projectName = "MyProject";
   List<String> get possibleTaskParent => [projectName, ...projectTasks]; // dynamically construction when accessing it
+  List<String> projectMembers = ['Alice','Bob','Charlie'];
+  Map<String, String> taskMember = {};
+  String username = "Alice";
   
 
   final TextEditingController endDateController = TextEditingController();
@@ -93,6 +111,12 @@ class _HomeState extends State<Home> {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController percentageWeightingController = TextEditingController();
   final TextEditingController priorityController = TextEditingController();
+  
+  late String _selectedUsername;
+  Role _selectedRole = Role.editor;
+
+  final ValueNotifier<List<Map<String, String>>> _membersListNotifier =
+      ValueNotifier([]);
 
   final notificationFrequencyNotifier = ValueNotifier<NotificationFrequency>(NotificationFrequency.daily);
   late final ValueNotifier<String> taskParentNotifier;
@@ -108,10 +132,15 @@ class _HomeState extends State<Home> {
   FocusNode percentageFocusNode = FocusNode();
   FocusNode priorityFocusNode = FocusNode();
 
+  
+
   @override
   void initState() {
-    super.initState();  
+    super.initState();
+    _selectedUsername = username;
+    taskMember = {username: _selectedRole.name};
      taskParentNotifier = ValueNotifier<String>(possibleTaskParent.first);
+
   }
 
   @override
@@ -130,6 +159,7 @@ class _HomeState extends State<Home> {
     descriptionController.dispose();
     percentageWeightingController.dispose();
     priorityController.dispose();
+    _membersListNotifier.dispose();
     super.dispose();
   }
 
@@ -230,7 +260,7 @@ class _HomeState extends State<Home> {
                   ListTile(
                     title: const Text("Tags"),
                     subtitle:
-                        task.listOfTags != null && task.listOfTags!.isNotEmpty
+                        task.listOfTags.isNotEmpty
                             ? Wrap(
                                 spacing: 8,
                                 children: task.listOfTags!
@@ -247,8 +277,8 @@ class _HomeState extends State<Home> {
                   ListTile(
                     title: const Text("Members"),
                     subtitle: Text(
-                        task.members != null && task.members!.isNotEmpty
-                            ? task.members!.entries
+                        task.members.isNotEmpty
+                            ? task.members.entries
                                 .map((e) => "${e.key}: ${e.value}")
                                 .join(", ")
                             : "None"),
@@ -298,6 +328,7 @@ class _HomeState extends State<Home> {
       priorityController.clear();
       endDateController.clear();
       tags = [];
+      taskMember.clear();
       taskParentNotifier.value = possibleTaskParent.first;
       notificationPreference = true;
       formKey.currentState?.reset();
@@ -305,18 +336,19 @@ class _HomeState extends State<Home> {
   }
 
   void submitTask() {
+    
     if (formKey.currentState!.validate()) {
       Task newTask = Task(
         title: titleController.text,
         parentProject: taskParentNotifier.value,
         percentageWeighting:
-            double.tryParse(percentageWeightingController.text) ?? 0.0,
+        double.tryParse(percentageWeightingController.text) ?? 0.0,
         listOfTags: tags,
         priority: int.tryParse(priorityController.text) ?? 1,
-        startDate: DateTime(2024, 9, 7, 12, 00),
+        startDate: DateTime.now(),
         endDate: DateTime.parse(endDateController.text),
         description: descriptionController.text,
-        members: const {},
+        members: Map.from(taskMember),
         notificationPreference: notificationPreference,
         notificationFrequency: notificationFrequencyNotifier.value,
         directoryPath: "path/to/directory",
@@ -496,7 +528,7 @@ class _HomeState extends State<Home> {
                     }).toList(),
                     onChanged: (value) {
                       if (value != null) {
-                        taskParentNotifier.value = value; // Update taskParentNotifier.value
+                        taskParentNotifier.value = value; 
                       }
                     },
                     decoration: InputDecoration(
@@ -586,24 +618,90 @@ class _HomeState extends State<Home> {
                   ),
                   const SizedBox(height: 16),
                   Text("Assignee(s)", style: theme.textTheme.titleMedium),
-                  DropdownButtonFormField<String>(
-                    items: ['projectMember1', 'projectMember2', 'projectMember3']
-                        .map((level) => DropdownMenuItem(
-                              value: level,
-                              child: Text(level,
-                                  style:
-                                      TextStyle(color: theme.colorScheme.onSurface)),
-                            ))
-                        .toList(),
-                    onChanged: (value) {},
-                    decoration: InputDecoration(
-                      hintText: "Project Members",//add the list chips
-                      filled: true,
-                      fillColor: theme.colorScheme.surface,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedUsername,
+                          decoration: InputDecoration(
+                            hintText: "Assignee",                            
+                            filled: true,
+                            fillColor: theme.colorScheme.surface,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          items: projectMembers.map((member) {
+                            return DropdownMenuItem<String>(
+                              value: member,
+                              child: Text(member),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedUsername = value!;
+                            });
+                          },
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: DropdownButtonFormField<Role>(
+                          value: _selectedRole,
+                          decoration: InputDecoration(
+                            hintText: "Role",
+                            filled: true,
+                            fillColor: theme.colorScheme.surface,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          items: Role.values.map((role) {
+                            return DropdownMenuItem<Role>(
+                              value: role,
+                              child: Text(role.name),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedRole = value!;
+                            });
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.add, color: theme.colorScheme.primary),
+                        onPressed: () {
+                          taskMember[_selectedUsername] = _selectedRole.name;
+                          
+                          _selectedUsername = username;
+                          _selectedRole = Role.editor;
+                          setState(() {}); 
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ValueListenableBuilder<List<Map<String, String>>>(
+                    valueListenable: _membersListNotifier,
+                    builder: (context, membersList, child) {
+                      return Wrap(
+                        spacing: 8,
+                         children: taskMember.entries.map((entry) {
+                          return Chip(
+                            label: Text(
+                              "${entry.key} (${entry.value})",
+                              style: TextStyle(color: theme.colorScheme.onPrimary),
+                            ),
+                            backgroundColor: theme.colorScheme.primary,
+                              onDeleted: () {
+                                taskMember.remove(entry.key);
+                                setState(() {}); 
+                              },
+                            );
+                          }).toList(),
+                      );
+                    },
                   ),
                   const Spacer(),
                   // Action Buttons
@@ -624,6 +722,7 @@ class _HomeState extends State<Home> {
                         onPressed: () {
                           submitTask();
                           tags = [];
+                          taskMember.clear();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.secondary,
@@ -676,7 +775,7 @@ class _HomeState extends State<Home> {
         body: TabBarView(children: <Widget>[
           createHomeBody(),
           createTaskBody(),
-          AddTaskScreen(),
+          createAddTaskBody(),
         ]),
       ),
     );
