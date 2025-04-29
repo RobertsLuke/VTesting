@@ -1,7 +1,9 @@
 import 'package:http/http.dart' as http;
 import 'package:sevenc_iteration_two/usser/usserProfilePage.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
 
-class Usser {
+class Usser extends ChangeNotifier {
   // set the value of the usserID to an empty String initially so you can
   // check if the user exists in the database, given the email and password
   String usserID = '';
@@ -101,7 +103,7 @@ class Usser {
     // this function will get the projects that the usser is a part of
     // THIS FUNCTION IS A WORK IN PROGRESS SO THERE MAY BE UNEXPECTED BEHAVIOUR
 
-    dynamic id = getID();
+    dynamic id = await getID();
 
     final Uri request = Uri.parse(
         "http://127.0.0.1:5000/get/user/projects?user_id=$id");
@@ -223,7 +225,7 @@ class Usser {
 
   Future<String?> getPassword() async {
     // will get the password of a user with the associated ID
-
+    print("UserId: $usserID");
     if (usserID == '') {
       // the user does not exist in the database so there is no password to
       // retrieve
@@ -234,12 +236,10 @@ class Usser {
           "http://127.0.0.1:5000/get/user/password?user_id=$usserID");
       try {
         final response = await http.get(request);
+        print("getPasswordStatus: ${response.statusCode}");
 
         if (response.statusCode == 200) {
           return response.body;
-        }
-        else {
-          print(response.statusCode);
         }
       }
       catch (e) {
@@ -255,6 +255,8 @@ class Usser {
     // is incorrect and null if the password is incorrect
 
     String? databasePassword = await getPassword();
+
+    print("Datebase Password:$databasePassword");
     // will return null if there is no database password
     if (databasePassword == null) {
       return null;
@@ -270,12 +272,14 @@ class Usser {
 
     final Uri request = Uri.parse("http://127.0.0.1:5000/get/username?email=$email");
 
+    print(email);
+
     try {
       final response = await http.get(request);
 
       if (response.statusCode == 200) { usserName = response.body; }
       else { print(response.statusCode); }
     }
-    catch (e) { print(e); }
+    catch (e) { print('in exception'); print(e); }
   }
 }
