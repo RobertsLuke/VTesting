@@ -2,65 +2,60 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DatePickerField extends StatefulWidget {
-  final DateTime initialDate;
+  final TextEditingController controller;
+  final FocusNode focusNode;
   final Function(DateTime) onDateSelected;
 
-  const DatePickerField({Key? key, required this.initialDate, required this.onDateSelected}) : super(key: key);
+  const DatePickerField({
+    Key? key,
+    required this.controller,
+    required this.focusNode,
+    required this.onDateSelected,
+  }) : super(key: key);
 
   @override
-  _DatePickerFieldState createState() => _DatePickerFieldState();
+  State<DatePickerField> createState() => _DatePickerFieldState();
 }
 
 class _DatePickerFieldState extends State<DatePickerField> {
-  late DateTime selectedDate;
-
-  @override
-  void initState() {
-    super.initState();
-    selectedDate = widget.initialDate;
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime.now(),
-        lastDate: DateTime.now().add(const Duration(days: 365)),
-      );
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
-      widget.onDateSelected(selectedDate);
-    }
-  }
-  @override
-  void didUpdateWidget(covariant DatePickerField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.initialDate != oldWidget.initialDate) {
-      setState(() {
-        selectedDate = widget.initialDate;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => _selectDate(context),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          hintText: "Select Date",
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+    return TextFormField(
+      controller: widget.controller,
+      focusNode: widget.focusNode,
+      readOnly: true,
+      decoration: InputDecoration(
+        hintText: "Pick Date",
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Text(DateFormat('dd-MM-yyyy').format(selectedDate)),
-            const Icon(Icons.calendar_today),
-          ],
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.calendar_today),
+          onPressed: _pickEndDate,
         ),
       ),
+      validator: (value) =>
+          value == null || value.isEmpty ? "Please select a date" : null,
+      onTap: () => _pickEndDate(),
+      onFieldSubmitted: (_) {
+        FocusScope.of(context).nextFocus();
+      },
     );
+  }
+
+  void _pickEndDate() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+
+    if (selectedDate != null) {
+      widget.onDateSelected(selectedDate);
+      widget.controller.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+    }
   }
 }

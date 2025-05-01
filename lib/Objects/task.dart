@@ -1,24 +1,54 @@
 import 'package:flutter/material.dart';
 enum NotificationFrequency { daily, weekly, monthly, none }
+enum Role { editor, reader }
+extension RoleExtension on Role {
+  String get name {
+    switch (this) {
+      case Role.editor:
+        return 'Editor';
+      case Role.reader:
+        return 'Reader';
+      default:
+        return '';
+    }
+  }
+}
+enum Status {todo, inProgress, completed}
+
+extension StatusExtension on Status {
+  String get displayName {
+    switch (this) {
+      case Status.todo:
+        return 'To Do';
+      case Status.inProgress:
+        return 'In Progress';
+      case Status.completed:
+        return 'Completed';
+    }
+  }
+}
+
 class Task with ChangeNotifier {
 
   String title;
-  String? parentProject;//set
-  double percentageWeighting;//validate
-  List<String> listOfTags = [];//set
+  String? parentProject;
+  double percentageWeighting;
+  List<String> listOfTags = [];
   int priority;
-  DateTime startDate = DateTime.now();//set
+  DateTime startDate = DateTime.now();
   DateTime endDate;
-  Map<String, String> members = {};//set
-  bool notificationPreference = true;//set
+  Map<String, String> members = {};
+  bool notificationPreference = true;
   NotificationFrequency notificationFrequency = NotificationFrequency.daily;
   String description;
-  String directoryPath;//set
-  List<String>? comments;//set
+  String directoryPath;
+  List<String>? comments;
+  Status status = Status.todo;
 
   Task({
     required this.title,
     this.parentProject,
+    required this.status,
     required this.percentageWeighting,
     required this.listOfTags, 
     required this.priority,
@@ -133,6 +163,11 @@ class Task with ChangeNotifier {
 
   void updateNotificationPreference(bool newPreference) {
     notificationPreference = newPreference;
+    notifyListeners();
+  }
+
+  void updateStatus (Status newStatus){
+    status = newStatus;
     notifyListeners();
   }
 }
