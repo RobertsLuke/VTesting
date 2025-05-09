@@ -325,7 +325,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                 validator: (value) => null,
                               ),
                               
-                              // Project Members (just display, not editable for simplicity)
+                              // Project Members (just display, not editable for simplicity - but might implement removal as feature)
                               const SizedBox(height: 16),
                               Text("Project Members", style: theme.textTheme.titleMedium),
                               Card(

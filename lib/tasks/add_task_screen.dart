@@ -175,7 +175,7 @@ void initState() {
                       ),
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
-                    validator: (value) => null,
+                    validator: (value) => titleValidator(value, projectTasks.contains(value)),
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(descriptionFocusNode);
                     },
@@ -195,7 +195,7 @@ void initState() {
                       ),
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
-                    validator: (value) => null,
+                    validator: (value) => descriptionValidator(value),
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(priorityFocusNode);
                     },
@@ -316,7 +316,15 @@ void initState() {
                       ),
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
-                    validator: (value) => null,
+                    validator: (value) {
+                        String? message= taskWeightValidator(value, projectCapacity)[0];
+                        int? percentage= taskWeightValidator(value, projectCapacity)[1];
+                        if (message == null) {
+                          projectCapacity -= percentage!;
+                          return null;
+                        }
+                        return message;
+                      },
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(tagFocusNode);
                     },

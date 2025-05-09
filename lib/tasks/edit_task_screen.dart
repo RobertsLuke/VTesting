@@ -3,8 +3,8 @@ import '../Objects/task.dart';
 import '../providers/tasks_provider.dart';
 import '../shared/components/date_picker_field.dart';
 import 'package:provider/provider.dart';
-import '../providers/projects_provider.dart';
-import 'validation/edit_task_validation.dart';
+
+// BASED ON VOULAS ADD TASK SCREEN - NOT CLAIMING TO BE ORIGINAL
 
 class EditTaskScreen extends StatefulWidget {
   const EditTaskScreen({Key? key}) : super(key: key);
@@ -36,7 +36,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   // Task Selection
   int? selectedTaskIndex;
   Task? selectedTask;
-  String? originalTaskTitle; // Store the original title for update matching
   
   // Members Management
   List<String> projectMembers = ['Alice', 'Bob', 'Charlie'];
@@ -53,39 +52,21 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   List<String> tags = [];
   
   // Parent Project
-  late List<String> possibleParents;
+  String projectName = "MyProject";
+  List<String> projectTasks = ["Task1", "Task 2"];
+  List<String> get possibleTaskParent => [projectName, ...projectTasks];
   late final ValueNotifier<String> taskParentNotifier;
   
   @override
   void initState() {
     super.initState();
-    // Initialize with an empty list, will be populated in didChangeDependencies
-    possibleParents = [];
-    taskParentNotifier = ValueNotifier<String>("");
+    taskParentNotifier = ValueNotifier<String>(possibleTaskParent.first);
   }
   
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadProjects();
     _loadTasks();
-  }
-  
-  void _loadProjects() {
-    // Get all projects from ProjectsProvider
-    final projects = Provider.of<ProjectsProvider>(context, listen: false).projects;
-    // Create a list of project names for the dropdown
-    possibleParents = projects.map((project) => project.projectName).toList();
-    
-    // Ensure we have at least one item in the list to avoid dropdown errors
-    if (possibleParents.isEmpty) {
-      possibleParents = ["No Projects Available"];
-    }
-    
-    // Only set the initial value if it hasn't been set already
-    if (taskParentNotifier.value.isEmpty && possibleParents.isNotEmpty) {
-      taskParentNotifier.value = possibleParents.first;
-    }
   }
   
   void _loadTasks() {
@@ -102,7 +83,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       setState(() {
         selectedTaskIndex = index;
         selectedTask = task;
-        originalTaskTitle = task.title; // Store original title
         
         // Populate form with task data
         titleController.text = task.title;
@@ -110,19 +90,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         endDateController.text = task.endDate.toString().split(' ')[0]; // Just the date part
         priorityController.text = task.priority.toString();
         percentageWeightingController.text = task.percentageWeighting.toString();
-        
-        // Update task parent
-        if (task.parentProject != null) {
-          // Make sure the parent project exists in the list
-          if (!possibleParents.contains(task.parentProject)) {
-            // If not, add it to the list to prevent dropdown errors
-            possibleParents.add(task.parentProject!);
-          }
-          taskParentNotifier.value = task.parentProject!;
-        } else if (possibleParents.isNotEmpty) {
-          taskParentNotifier.value = possibleParents.first;
-        }
-        
+        taskParentNotifier.value = task.parentProject ?? possibleTaskParent.first;
         tags = List.from(task.listOfTags);
         taskMembers = Map.from(task.members);
         notificationFrequencyNotifier.value = task.notificationFrequency;
@@ -132,7 +100,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   }
   
   void _saveTask() {
-    if (_formKey.currentState!.validate() && selectedTask != null && originalTaskTitle != null) {
+    if (_formKey.currentState!.validate() && selectedTask != null) {
       final updatedTask = Task(
         title: titleController.text,
         parentProject: taskParentNotifier.value,
@@ -150,15 +118,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         comments: selectedTask!.comments,
       );
       
-      // Use the specialized update method with original title
-      Provider.of<TaskProvider>(context, listen: false).updateTaskByOriginalTitle(
-        originalTaskTitle!,
-        updatedTask
-      );
-      
-      // Update the original title to the new one for subsequent edits
-      originalTaskTitle = updatedTask.title;
-      
+      Provider.of<TaskProvider>(context, listen: false).updateTask(updatedTask);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Task '${updatedTask.title}' updated successfully!"))
       );
@@ -395,15 +355,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                                 ValueListenableBuilder<String>(
                                   valueListenable: taskParentNotifier,
                                   builder: (context, parentValue, child) {
-                                    // Make sure we're not trying to display a dropdown with an invalid value
-                                    if (parentValue.isNotEmpty && !possibleParents.contains(parentValue)) {
-                                      // Add the current value to possible parents to avoid dropdown error
-                                      possibleParents.add(parentValue);
-                                    }
-                                    
                                     return DropdownButtonFormField<String>(
                                       value: parentValue,
-                                      items: possibleParents
+                                      items: possibleTaskParent
                                           .map((parent) => DropdownMenuItem(
                                                 value: parent,
                                                 child: Text(parent),
