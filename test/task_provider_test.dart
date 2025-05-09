@@ -19,6 +19,7 @@ void main() {
         notificationPreference: true,
         notificationFrequency: NotificationFrequency.daily,
         directoryPath: '/test/path',
+        status: Status.todo
       );
 
       provider.addTask(task);
