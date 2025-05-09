@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'settings_page.dart';
-import 'components/components.dart';
-import 'components/compact/compact_components.dart';
-import 'components/add_task_screen.dart';
-import 'components/list_of_tasks.dart';
+import '../tasks/add_task_screen.dart';
+import '../tasks/edit_task_screen.dart';
+import '../projects/add_project_screen.dart';
+import '../projects/edit_project_screen.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -16,91 +16,30 @@ class _HomeState extends State<Home> {
   
   String screenTitle = "Team 7C"; // User name 
   
-  
-
-  @override
-  void initState() {
-    super.initState();
-    
-  }
-
-  
-  
-  // Updated Home Body layout from home_screen.dart
+  // Simplified Home Body
   Widget createHomeBody() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          // Top row with three equal columns
-          Expanded(
-            flex: 2,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Projects List - Compact Version
-                Expanded(
-                  child: CompactProjectList(),
-                ),
-                const SizedBox(width: 16),
-                // Groups List - Compact Version
-                Expanded(
-                  child: CompactGroupsList(),
-                ),
-                const SizedBox(width: 16),
-                // Activity Tracker - Compact Version
-                Expanded(
-                  child: CompactActivityTracker(),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Middle row with Kanban
-          Expanded(
-            flex: 3,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 1500),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "My Tasks",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Expanded(
-                        child: KanbanBoard(),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Bottom row with deadline manager
-          Expanded(
-            flex: 2,
-            child: const DeadlineManager(),
-          ),
-        ],
+    return const Center(
+      child: Text(
+        "Home",
+        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  
+  // Simplified Projects Body
+  Widget createProjectsBody() {
+    return const Center(
+      child: Text(
+        "Projects",
+        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3, // Only 3 tabs now
+      length: 7, // 7 tabs now
       initialIndex: 0,
       child: Scaffold(       
         appBar: AppBar(
@@ -109,25 +48,33 @@ class _HomeState extends State<Home> {
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsPage()),
-                );
+                // Switch to Settings tab
+                DefaultTabController.of(context).animateTo(6);
               },
             ),
           ],
-          bottom: const TabBar(
-            tabs: <Widget>[
+          bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.center, 
+            tabs: const <Widget>[
               Tab(text: "Home"),
-              Tab(text: "Project Tasks"),
-              Tab(text: "Add Task"), // Using singular form as in original home.dart
+              Tab(text: "Projects"),
+              Tab(text: "Add Project"),
+              Tab(text: "Edit Project"),
+              Tab(text: "Add Task"),
+              Tab(text: "Edit Task"),
+              Tab(text: "Settings"),
             ],
           ),
         ),
         body: TabBarView(children: <Widget>[
           createHomeBody(),
-          createTaskBody(),
-          const AddTaskScreen()
+          createProjectsBody(),
+          const AddProjectScreen(),
+          const EditProjectScreen(),
+          const AddTaskScreen(),
+          const EditTaskScreen(),
+          const SettingsPage()
         ]),
       ),
     );

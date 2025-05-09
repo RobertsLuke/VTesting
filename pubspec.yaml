@@ -68,6 +68,8 @@ flutter:
   assets:
     - assets/
     - assets/login/
+    - assets/mock_data/
+    - lib/offline_mode/mock_data/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
