@@ -7,17 +7,21 @@ import '../providers/tasks_provider.dart';
 import '../Objects/task.dart';
 import '../projects/project_model.dart';
 
-// Handles loading of mock data for testing
+// offline mode handler for app functionality without internet
+// [loads local mock data to simulate backend connectivity]
 class OfflineModeHandler {
   
-  // Load mock project data from JSON
+  // reads mock project data from json assets
+  // [converts to proper app models with all required fields]
   static Future<List<Project>> loadMockProjects() async {
+    // read json file from assets bundle
     String jsonString = await rootBundle.loadString('lib/offline_mode/mock_data/mock_projects.json');
     List<dynamic> jsonData = json.decode(jsonString)['projects'];
     
     List<Project> projects = [];
     for (var item in jsonData) {
-      // Convert JSON to Project object using the correct model
+      // convert each json project to proper Project object 
+      // [carefully handles dates and enums]
       Project project = Project(
         projectName: item['projectName'],
         joinCode: item['joinCode'],
@@ -25,12 +29,13 @@ class OfflineModeHandler {
         notificationFrequency: item['notificationFrequency'] == 'daily' ? 
                               NotificationFrequency.daily : NotificationFrequency.weekly,
         uuid: item['uuid'],
+        projectUid: item['projectUid'] ?? projects.length + 1,  // fallback to generated id if missing
       );
       
-      // Add members if they exist
+      // populate project with members if available
       if (item['members'] != null) {
         for (var member in item['members']) {
-          project.addMember(member);
+          project.addMember(member, 'Editor'); // default role for testing
         }
       }
       
@@ -40,14 +45,17 @@ class OfflineModeHandler {
     return projects;
   }
   
-  // Load mock task data from JSON
+  // reads mock task data from json assets
+  // [matches structure expected from backend api]
   static Future<List<Task>> loadMockTasks() async {
+    // read json file from assets bundle
     String jsonString = await rootBundle.loadString('lib/offline_mode/mock_data/mock_tasks.json');
     List<dynamic> jsonData = json.decode(jsonString)['tasks'];
     
     List<Task> tasks = [];
     for (var item in jsonData) {
-      // Set status based on string value
+      // convert string status to app enum
+      // [todo, inProgress, completed]
       Status taskStatus;
       switch(item['status']) {
         case 'inProgress':
@@ -60,7 +68,7 @@ class OfflineModeHandler {
           taskStatus = Status.todo;
       }
       
-      // Set notification frequency
+      // convert string notification frequency to app enum
       NotificationFrequency notificationFreq;
       switch(item['notificationFrequency']) {
         case 'weekly':
@@ -76,7 +84,8 @@ class OfflineModeHandler {
           notificationFreq = NotificationFrequency.daily;
       }
 
-      // Create Task object with all required fields
+      // create complete task object with mock data
+      // [ensures all required properties are included]
       Task task = Task(
         title: item['title'],
         description: item['description'],
@@ -90,7 +99,7 @@ class OfflineModeHandler {
         members: Map<String, String>.from(item['members']),
         notificationPreference: item['notificationPreference'],
         notificationFrequency: notificationFreq,
-        directoryPath: 'offline/tasks/${item['title']}', // Provide a default directory path
+        directoryPath: 'offline/tasks/${item['title']}', // offline-specific path
       );
       
       tasks.add(task);
@@ -99,16 +108,18 @@ class OfflineModeHandler {
     return tasks;
   }
   
-  // Load mock data into providers
+  // primary entry point for offline mode 
+  // [call when connection fails or for testing]
   static Future<bool> loadMockData(BuildContext context) async {
-    // Load and set projects
+    // load projects first
     List<Project> projects = await loadMockProjects();
     Provider.of<ProjectsProvider>(context, listen: false).loadMockProjects(projects);
     
-    // Load and set tasks (assuming we've updated TaskProvider similarly)
+    // then load tasks that reference those projects
     List<Task> tasks = await loadMockTasks();
     Provider.of<TaskProvider>(context, listen: false).loadMockTasks(tasks);
     
+    // all mock data loaded successfully
     return true;
   }
 }
