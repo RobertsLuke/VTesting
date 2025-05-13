@@ -417,7 +417,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                   ),
                                 ),
                                 style: TextStyle(color: theme.colorScheme.onSurface),
-                                validator: (value) => null,
+                                validator: (value) => googleDriveLinkValidator(value),
                                 onFieldSubmitted: (_) {
                                   FocusScope.of(context).requestFocus(discordLinkFocusNode);
                                 },
@@ -437,7 +437,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                   ),
                                 ),
                                 style: TextStyle(color: theme.colorScheme.onSurface),
-                                validator: (value) => null,
+                                validator: (value) => discordLinkValidator(value),
                               ),
                               
                               const SizedBox(height: 16),
