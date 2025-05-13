@@ -16,11 +16,11 @@ void main() {
       expect(projectNameFieldValidation(null), "Project name must not be empty");
     });
 
-    test("When there are is 51 characters", () {
+    test("When there are 51 characters", () {
       expect(projectNameFieldValidation("a" * 51), "Project name must be 50 or less characters");
     });
 
-    test("When there are is 8 characters", () {
+    test("When there are 8 characters", () {
       expect(projectNameFieldValidation("football"), isNull);
     });
 
