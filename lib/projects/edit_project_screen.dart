@@ -327,7 +327,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                   ),
                                 ),
                                 style: TextStyle(color: theme.colorScheme.onSurface),
-                                validator: (value) => value != null ? null : "Cannot be empty",
+                                validator: (value) => projectNameFieldValidation(value),
                                 onFieldSubmitted: (_) {
                                   FocusScope.of(context).requestFocus(joinCodeFocusNode);
                                 },
@@ -347,7 +347,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                   ),
                                 ),
                                 style: TextStyle(color: theme.colorScheme.onSurface),
-                                validator: (value) => value != null ? null : "Cannot be empty",
+                                validator: (value) => joinCodeFieldValidation(value),
                                 onFieldSubmitted: (_) {
                                   FocusScope.of(context).requestFocus(deadlineFocusNode);
                                 },
