@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'screen/home_screen.dart';
+import '../projects/screen/projects_screen.dart';
 import 'settings_page.dart';
-import 'components/components.dart';
-import 'components/compact/compact_components.dart';
-import 'components/add_task_screen.dart';
-import 'components/list_of_tasks.dart';
+import '../tasks/add_task_screen.dart';
+import '../tasks/edit_task_screen.dart';
+import '../projects/add_project_screen.dart';
+import '../projects/edit_project_screen.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,120 +16,56 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   
-  String screenTitle = "Team 7C"; // User name 
+  String screenTitle = "Team 7C"; 
   
-  
-
-  @override
-  void initState() {
-    super.initState();
-    
-  }
-
-  
-  
-  // Updated Home Body layout from home_screen.dart
-  Widget createHomeBody() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          // Top row with three equal columns
-          Expanded(
-            flex: 2,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Projects List - Compact Version
-                Expanded(
-                  child: CompactProjectList(),
-                ),
-                const SizedBox(width: 16),
-                // Groups List - Compact Version
-                Expanded(
-                  child: CompactGroupsList(),
-                ),
-                const SizedBox(width: 16),
-                // Activity Tracker - Compact Version
-                Expanded(
-                  child: CompactActivityTracker(),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Middle row with Kanban
-          Expanded(
-            flex: 3,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 1500),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "My Tasks",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Expanded(
-                        child: KanbanBoard(),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Bottom row with deadline manager
-          Expanded(
-            flex: 2,
-            child: const DeadlineManager(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3, // Only 3 tabs now
+      length: 7, 
       initialIndex: 0,
       child: Scaffold(       
         appBar: AppBar(
           title: Text(screenTitle),
           actions: [
+            // Probably remove this icon later after introducing Jamie's settings page properly
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsPage()),
-                );
+                DefaultTabController.of(context).animateTo(7);
               },
             ),
           ],
-          bottom: const TabBar(
-            tabs: <Widget>[
+          bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.center,
+            indicatorSize: TabBarIndicatorSize.label,
+            indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(width: 3.0, color: Theme.of(context).colorScheme.primary),
+              insets: EdgeInsets.symmetric(horizontal: 16.0),
+            ),
+            labelColor: Theme.of(context).colorScheme.primary,
+            unselectedLabelColor: Colors.grey[600],
+            labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
+            tabs: const <Widget>[
               Tab(text: "Home"),
-              Tab(text: "Project Tasks"),
-              Tab(text: "Add Task"), // Using singular form as in original home.dart
+              Tab(text: "Projects"),
+              Tab(text: "Add/Join Project"),
+              Tab(text: "Edit Project"),
+              Tab(text: "Add Task"),
+              Tab(text: "Edit Task"),
+              Tab(text: "Settings"),
             ],
           ),
         ),
         body: TabBarView(children: <Widget>[
-          createHomeBody(),
-          createTaskBody(),
-          const AddTaskScreen()
+          const HomeScreen(),
+          const ProjectsScreen(),
+          const AddProjectScreen(),
+          const EditProjectScreen(),
+          const AddTaskScreen(), 
+          const EditTaskScreen(),
+          const SettingsPage(),
         ]),
       ),
     );

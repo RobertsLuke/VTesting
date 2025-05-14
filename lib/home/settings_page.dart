@@ -5,7 +5,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
-
+ // Needs to transition to Jamie's version
   @override
   Widget build(BuildContext context) {
     return Scaffold(

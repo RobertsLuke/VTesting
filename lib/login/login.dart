@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import '../offline_mode/offline_mode_handler.dart';
 import 'validation.dart';
 import 'input_field_containers.dart';
 import '../usser/usserObject.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
+import '../providers/connectivity_provider.dart';
+import '../providers/projects_provider.dart';
+import '../providers/tasks_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +22,72 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool isLoginMode = true;
+
+  // Function to load mock user data from assets
+  Future<Map<String, dynamic>> _loadMockUserData() async {
+    try {
+      // Load the JSON file from assets
+      final String jsonString = await rootBundle.loadString('lib/offline_mode/mock_data/user.json');
+      // Parse the JSON string
+      final Map<String, dynamic> jsonData = json.decode(jsonString);
+      return jsonData['user'];
+    } catch (e) {
+      print('Error loading mock user data: $e');
+      return {};
+    }
+  }
+
+  // Function to handle offline login
+  void _handleOfflineLogin() async {
+    try {
+      final userData = await _loadMockUserData();
+      if (userData.isNotEmpty) {
+        // Set the user data in the provider
+        context.read<Usser>().usserName = userData['username'];
+        context.read<Usser>().email = userData['email'];
+        context.read<Usser>().usserPassword = userData['password'];
+        
+        // Load mock data
+        bool success = await OfflineModeHandler.loadMockData(context);
+        
+        // Navigate to home screen
+        Navigator.pushNamed(context, "/home");
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Loaded mock data for testing"))
+        );
+      }
+    } catch (e) {
+      print('Error loading mock data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to load mock data"))
+      );
+    }
+  }
+
+  // CRUD: LoadUserData
+  Future<void> _loadUserData() async {
+    print("=== Loading User Data ===");
+    // Get the user ID
+    String userId = context.read<Usser>().usserID;
+    print("User ID: $userId");
+    
+    // Load projects first
+    final projectsProvider = context.read<ProjectsProvider>();
+    await projectsProvider.fetchProjects(userId);
+    print("Projects loaded: ${projectsProvider.projects.length}");
+    
+    // Load tasks for all projects
+    final taskProvider = context.read<TaskProvider>();
+    
+    // For each project, load its tasks
+    for (var project in projectsProvider.projects) {
+      print("Loading tasks for project: ${project.projectName}");
+      await taskProvider.fetchTasksForProject(project.uuid);
+    }
+    
+    print("All user data loaded successfully");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,32 +193,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
               print('password correct');
 
+              // Make sure we're in online mode
+              context.read<ConnectivityProvider>().setOfflineMode(false);
+
               // need to get the user's username as if they are logging in,
               // they won't be prompted to enter their username
-              context.read<Usser>().updateUsername();
+              await context.read<Usser>().updateUsername();
 
-              // ADD NAVIGATION TO OTHER SCREEN
-              // CURRENTLY SETTING IT TO JOIN SCREEN BUT THINK ABOUT HOW
-              // WE WANT TO HANDLE THIS
+              // CRUD: Load user data after login
+              await _loadUserData();
 
-              // adding check to make sure that the returning user is a part of
-              // a project. If not, they will be redirected to the join screen
-
-              String projects = await context.read<Usser>().getProjects();
-
-              print("Projects: $projects");
-              print(".$projects.");
-
-              // projects will be '[]' if it has no projects
-              if (projects == '[]\n') {
-                print("projects equal");
-                Navigator.pushNamed(context, "/join");
+              // Check if user has any projects to determine routing
+              final projectsProvider = context.read<ProjectsProvider>();
+              if (projectsProvider.projects.isEmpty) {
+                print("User has no projects, redirecting to join screen");
+                Navigator.pushNamed(context, "/home"); // Im just abandoning join and putting them to home whilst testing need to change to groups later
               }
               else {
-                print("projects not equal");
+                print("User has projects, redirecting to home screen");
                 Navigator.pushNamed(context, "/home");
               }
-
             }
             else {
               // the password is incorrect so need to update the text form field
@@ -247,7 +313,36 @@ class _LoginScreenState extends State<LoginScreen> {
                       changePageState();
                     },
                     child: Text((isLoginMode)?"Want to Sign Up?":"Want to Login?", style: const TextStyle(color: Colors.white70)),
-                  )
+                  ),
+                  const SizedBox(height: 20,),
+                  // Quick login button
+                  if (isLoginMode)
+                    ElevatedButton(
+                      onPressed: () {
+                        // Fill in test credentials
+                        email.text = "testuser123456@gmail.com";
+                        password.text = "P@ssword123";
+                        
+                        // Submit the form
+                        submitAction();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[700],
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ),
+                      child: const Text("Quick Login (Test User)", style: TextStyle(color: Colors.white)),
+                    ),
+                  const SizedBox(height: 20,),
+                  // Test data button
+                  if (isLoginMode)
+                    ElevatedButton(
+                      onPressed: _handleOfflineLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange[700],
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ),
+                      child: const Text("LOAD TEST DATA", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    )
                 ],
               ),
             ),
