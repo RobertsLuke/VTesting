@@ -23,4 +23,4 @@ jobs:
         run: flutter pub get
 
       - name: Run task tests
-        run: flutter test test/task_add_edit_tests/ test/task_edit_tests/ test/task_provider_test.dart test/task_screen_test.dart test/edit_task_screen_test.dart
+        run: flutter test test/task_add_edit_tests/ test/task_edit_tests/ test/task_provider_test.dart test/task_screen_test.dart test/edit_task_screen_test.dart test/task_model_test.dart
